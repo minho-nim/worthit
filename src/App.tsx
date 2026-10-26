@@ -73,6 +73,10 @@ export default function App() {
     const loadedRecords = loadRecords();
     const loadedBilling = loadBillingPeriods();
     const loadedSettings = loadSettings();
+    if (!isDemoMode && loadedItems.length > 0 && !loadedSettings.hasStartedUsing) {
+      loadedSettings.hasStartedUsing = true;
+      saveSettings(loadedSettings);
+    }
 
     setItems(loadedItems);
     setRecords(loadedRecords);
@@ -82,7 +86,7 @@ export default function App() {
     // Show onboarding if no items and onboarding not yet completed
     if (!isDemoMode && new URLSearchParams(window.location.search).get('start') === '1' && loadedItems.length === 0) {
       setIsAddItemOpen(true);
-      const updated = { ...loadedSettings, hasCompletedOnboarding: true };
+      const updated = { ...loadedSettings, hasCompletedOnboarding: true, hasStartedUsing: true };
       setSettings(updated);
       saveSettings(updated);
     } else if (!isDemoMode && loadedItems.length === 0 && !loadedSettings.hasCompletedOnboarding) {
@@ -149,6 +153,18 @@ export default function App() {
     setSettings(updated);
     saveSettings(updated);
     setIsOnboardingOpen(false);
+  };
+
+  const hasStartedUsing = Boolean(settings.hasStartedUsing || items.length > 0);
+  const handleStartAdding = () => {
+    if (!isDemoMode) {
+      const updated = { ...settings, hasCompletedOnboarding: true, hasStartedUsing: true };
+      setSettings(updated);
+      saveSettings(updated);
+    }
+    setIsOnboardingOpen(false);
+    setEditingItem(null);
+    setIsAddItemOpen(true);
   };
 
   // Add / Edit Item
@@ -228,13 +244,13 @@ export default function App() {
       }
 
       addToast('새 소비가 등록되었습니다!', `${newItem.name} 가치 추적을 시작합니다.`, 'success');
-      // Automatically open detail for the newly added item
-      setSelectedItem(newItem);
+      setSelectedItem(null);
+      setActiveTab('home');
     }
   };
 
   // Quick +1 Usage Action
-  const handleQuickAddOne = (item: WorthItem, e: React.MouseEvent) => {
+  const handleQuickAddOne = (item: WorthItem, e: React.MouseEvent, source?: 'daily-check') => {
     e.stopPropagation();
     if (item.usageMethod === 'days') return;
 
@@ -248,6 +264,7 @@ export default function App() {
       itemId: item.id,
       usedAt: getTodayDateString(),
       quantity: 1,
+      source,
       createdAt: nowIso,
     };
 
@@ -273,6 +290,23 @@ export default function App() {
     } else {
       addToast('사용 기록이 추가됐어요!', `+1${item.usageUnit} 사용`, 'success');
     }
+  };
+
+  // The daily check owns one record; toggling never deletes manual usage.
+  const handleToggleToday = (item: WorthItem, event: React.MouseEvent) => {
+    event.stopPropagation();
+    if (item.usageMethod !== 'usage' || item.status !== 'active') return;
+    const today = getTodayDateString();
+    const dailyRecord = records.find((record) => record.itemId === item.id
+      && record.usedAt === today && record.source === 'daily-check');
+    if (dailyRecord) {
+      const updated = records.filter((record) => record.id !== dailyRecord.id);
+      setRecords(updated);
+      saveRecords(updated);
+      addToast('오늘 사용 체크를 취소했어요.', `${item.name}의 체크로 추가한 1${item.usageUnit} 기록을 취소했어요.`, 'info');
+      return;
+    }
+    handleQuickAddOne(item, event, 'daily-check');
   };
 
   // Custom Record Save
@@ -333,6 +367,7 @@ export default function App() {
       if (r.id === recordId) {
         return {
           ...r,
+          source: undefined,
           quantity,
           usedAt,
           note,
@@ -436,10 +471,7 @@ export default function App() {
 
       {/* Main Top Header */}
       <Header
-        onOpenAddItem={() => {
-          setEditingItem(null);
-          setIsAddItemOpen(true);
-        }}
+        onOpenAddItem={handleStartAdding}
         onOpenSettings={() => setIsSettingsOpen(true)}
         activeTab={activeTab}
         setActiveTab={setActiveTab}
@@ -459,7 +491,7 @@ export default function App() {
         <div className="max-w-4xl w-full mx-auto px-4 pt-4 space-y-2">
           <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-slate-500">
             <span>내 소비는 이 브라우저에 자동 저장돼요. 백업·복원은 상단 설정에서 할 수 있어요.</span>
-            <a href={demoPageUrl} className="text-emerald-700 font-semibold underline underline-offset-2">샘플 둘러보기</a>
+            {!hasStartedUsing && <a href={demoPageUrl} className="text-emerald-700 font-semibold underline underline-offset-2">샘플 둘러보기</a>}
           </div>
           <AppInstall />
         </div>
@@ -473,16 +505,14 @@ export default function App() {
             itemStats={itemStatsList}
             records={records}
             consecutiveStreak={consecutiveStreak}
-            onOpenAddItem={() => {
-              setEditingItem(null);
-              setIsAddItemOpen(true);
-            }}
+            onOpenAddItem={handleStartAdding}
             onSelectItem={(item) => setSelectedItem(item)}
             onQuickAddOne={handleQuickAddOne}
+            onToggleToday={handleToggleToday}
             onOpenLogModal={(item) => setQuickLogItem(item)}
             onNavigateToItems={() => setActiveTab('items')}
             onNavigateToAnalytics={() => setActiveTab('analytics')}
-            onLoadDemoData={items.length === 0 ? handleOpenDemo : undefined}
+            onLoadDemoData={!hasStartedUsing && !isDemoMode ? handleOpenDemo : undefined}
             onOpenReceipt={(st) => setReceiptStats(st)}
           />
         )}
@@ -491,10 +521,7 @@ export default function App() {
           <ItemsView
             items={items}
             itemStats={itemStatsList}
-            onOpenAddItem={() => {
-              setEditingItem(null);
-              setIsAddItemOpen(true);
-            }}
+            onOpenAddItem={handleStartAdding}
             onSelectItem={(item) => setSelectedItem(item)}
             onQuickAddOne={handleQuickAddOne}
             onOpenLogModal={(item) => setQuickLogItem(item)}
@@ -523,10 +550,7 @@ export default function App() {
       <BottomNav
         activeTab={activeTab}
         setActiveTab={setActiveTab}
-        onOpenAddItem={() => {
-          setEditingItem(null);
-          setIsAddItemOpen(true);
-        }}
+        onOpenAddItem={handleStartAdding}
         unlockedCount={achievements.filter((a) => a.isUnlocked).length}
       />
 
@@ -536,10 +560,7 @@ export default function App() {
         isOpen={isOnboardingOpen}
         onClose={handleCompleteOnboarding}
         onOpenDemo={handleOpenDemo}
-        onStartAdd={() => {
-          handleCompleteOnboarding();
-          setIsAddItemOpen(true);
-        }}
+        onStartAdd={handleStartAdding}
       />
 
       {/* 2. Item Form Wizard Modal (Create & Edit) */}
@@ -609,6 +630,7 @@ export default function App() {
 
       {/* 5. Settings / Backup Modal */}
       <SettingsModal
+        allowDemo={!hasStartedUsing}
         isOpen={isSettingsOpen}
         onClose={() => setIsSettingsOpen(false)}
         onDataChanged={handleDataReload}

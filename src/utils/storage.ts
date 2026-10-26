@@ -5,6 +5,7 @@ const STORAGE_KEYS = {
   RECORDS: 'worthit:v1:usageRecords',
   BILLING_PERIODS: 'worthit:v1:billingPeriods',
   SETTINGS: 'worthit:v1:settings',
+  INSTALL_GUIDE: 'worthit:v1:installGuideDismissed',
 };
 
 const DEFAULT_SETTINGS: AppSettings = {
@@ -43,6 +44,16 @@ const appStorage = {
     else localStorage.removeItem(key);
   },
 };
+
+export function isInstallGuideDismissed(): boolean {
+  try { return appStorage.getItem(STORAGE_KEYS.INSTALL_GUIDE) === 'true'; }
+  catch { return false; }
+}
+
+export function dismissInstallGuide(): void {
+  try { appStorage.setItem(STORAGE_KEYS.INSTALL_GUIDE, 'true'); }
+  catch { /* The current page still hides the guide when storage is unavailable. */ }
+}
 
 export function loadItems(): WorthItem[] {
   try {
@@ -172,7 +183,8 @@ function isBackupItem(value: unknown): value is WorthItem {
 function isBackupRecord(value: unknown): value is UsageRecord {
   return isObject(value) && isText(value.id) && isText(value.itemId)
     && isDate(value.usedAt) && isAmount(value.quantity) && value.quantity > 0
-    && isText(value.createdAt) && (value.note === undefined || typeof value.note === 'string');
+    && isText(value.createdAt) && (value.note === undefined || typeof value.note === 'string')
+    && (value.source === undefined || value.source === 'daily-check');
 }
 
 function isBackupPeriod(value: unknown): value is BillingPeriod {
@@ -209,7 +221,8 @@ export function validateAndParseBackup(jsonString: string): {
       return { success: false, error: '백업에 중복 ID 또는 존재하지 않는 소비의 기록이 포함되어 있습니다.' };
     }
     if (parsed.settings !== undefined && (!isObject(parsed.settings)
-      || typeof parsed.settings.hasCompletedOnboarding !== 'boolean' || !isText(parsed.settings.version))) {
+      || typeof parsed.settings.hasCompletedOnboarding !== 'boolean' || !isText(parsed.settings.version)
+      || (parsed.settings.hasStartedUsing !== undefined && typeof parsed.settings.hasStartedUsing !== 'boolean'))) {
       return { success: false, error: '백업의 앱 설정 형식이 올바르지 않습니다.' };
     }
     return {
@@ -249,6 +262,7 @@ export function clearAllData(): void {
   appStorage.removeItem(STORAGE_KEYS.RECORDS);
   appStorage.removeItem(STORAGE_KEYS.BILLING_PERIODS);
   appStorage.removeItem(STORAGE_KEYS.SETTINGS);
+  appStorage.removeItem(STORAGE_KEYS.INSTALL_GUIDE);
 }
 
 export function getSampleDemoData(): {

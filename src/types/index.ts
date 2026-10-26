@@ -30,6 +30,7 @@ export interface UsageRecord {
   usedAt: string; // YYYY-MM-DD
   quantity: number; // >= 0
   note?: string;
+  source?: 'daily-check';
   createdAt: string;
 }
 
@@ -44,6 +45,7 @@ export interface BillingPeriod {
 
 export interface AppSettings {
   hasCompletedOnboarding: boolean;
+  hasStartedUsing?: boolean;
   version: string;
   lastBackupDate?: string;
 }

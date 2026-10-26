@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
-import { Download, RefreshCw } from 'lucide-react';
+import { Download, RefreshCw, X } from 'lucide-react';
 import { useRegisterSW } from 'virtual:pwa-register/react';
+import { dismissInstallGuide, isInstallGuideDismissed } from '../utils/storage';
 
 interface InstallPrompt extends Event {
   prompt: () => Promise<void>;
@@ -10,6 +11,7 @@ interface InstallPrompt extends Event {
 export function AppInstall() {
   const [installPrompt, setInstallPrompt] = useState<InstallPrompt | null>(null);
   const [showHelp, setShowHelp] = useState(false);
+  const [dismissed, setDismissed] = useState(isInstallGuideDismissed);
   const [installed, setInstalled] = useState(false);
   const [installing, setInstalling] = useState(false);
   const { needRefresh: [needRefresh, setNeedRefresh], updateServiceWorker } = useRegisterSW();
@@ -25,15 +27,31 @@ export function AppInstall() {
     syncInstalled();
     media.addEventListener('change', syncInstalled);
     window.addEventListener('beforeinstallprompt', capture);
+    const openGuide = () => {
+      dismissInstallGuide();
+      setDismissed(true);
+      setShowHelp(true);
+    };
+    window.addEventListener('worthit:show-install-guide', openGuide);
     window.addEventListener('appinstalled', onInstalled);
     return () => {
       media.removeEventListener('change', syncInstalled);
       window.removeEventListener('beforeinstallprompt', capture);
       window.removeEventListener('appinstalled', onInstalled);
+      window.removeEventListener('worthit:show-install-guide', openGuide);
     };
   }, []);
 
+  const rememberDismissal = () => {
+    dismissInstallGuide();
+    setDismissed(true);
+  };
+  const closeGuide = () => {
+    rememberDismissal();
+    setShowHelp(false);
+  };
   const install = async () => {
+    rememberDismissal();
     if (!installPrompt) { setShowHelp(!showHelp); return; }
     setInstalling(true);
     try {
@@ -50,7 +68,7 @@ export function AppInstall() {
 
   return (
     <div className="space-y-2">
-      {!installed && (
+      {!installed && (!dismissed || showHelp) && (
         <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3">
           <div className="flex items-center justify-between gap-3">
             <div>
@@ -59,7 +77,11 @@ export function AppInstall() {
             </div>
             <button type="button" onClick={install} disabled={installing} aria-expanded={showHelp}
               className="shrink-0 flex items-center gap-1 rounded-xl bg-emerald-700 text-white px-3 py-2 text-xs font-bold disabled:opacity-50">
-              <Download className="w-3.5 h-3.5" /> {installPrompt ? '앱 설치' : '설치 안내'}
+              <Download className="w-3.5 h-3.5" /> {installPrompt ? '앱 설치' : showHelp ? '안내 접기' : '설치 안내'}
+            </button>
+            <button type="button" onClick={closeGuide} aria-label="설치 안내 닫기"
+              className="shrink-0 rounded-lg p-1 text-emerald-800 hover:bg-emerald-100">
+              <X className="w-4 h-4" />
             </button>
           </div>
           {showHelp && <div className="text-xs text-emerald-900 mt-3 leading-relaxed space-y-1">

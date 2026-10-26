@@ -23,6 +23,7 @@ import {
 import { getTodayDateString } from '../utils/calculator';
 
 interface SettingsModalProps {
+  allowDemo: boolean;
   isOpen: boolean;
   onClose: () => void;
   onDataChanged: () => void;
@@ -30,6 +31,7 @@ interface SettingsModalProps {
 }
 
 export const SettingsModal: React.FC<SettingsModalProps> = ({
+  allowDemo,
   isOpen,
   onClose,
   onDataChanged,
@@ -176,8 +178,17 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             />
           </div>
 
+          {!isDemoMode && (
+            <button type="button" onClick={() => {
+              window.dispatchEvent(new Event('worthit:show-install-guide'));
+              onClose();
+            }} className="w-full flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl border border-slate-200 text-slate-700 text-xs font-semibold hover:bg-slate-50">
+              <Download className="w-4 h-4" /> 앱 설치 안내 다시 보기
+            </button>
+          )}
+
           {/* Demo Data Preset */}
-          <div className="pt-2 border-t border-slate-100">
+          {(allowDemo || isDemoMode) && <div className="pt-2 border-t border-slate-100">
             <span className="text-xs font-bold text-slate-700 block mb-1.5">
               체험용 예시 데이터
             </span>
@@ -192,7 +203,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               <Sparkles className="w-4 h-4 text-emerald-600" />
               <span>별도 샘플 페이지 열기</span>
             </button>
-          </div>
+          </div>}
 
           {/* Danger zone: Clear data */}
           <div className="pt-2 border-t border-slate-100">

@@ -7,7 +7,7 @@ interface TodayStoriesTrayProps {
   items: WorthItem[];
   records: UsageRecord[];
   consecutiveStreak: number;
-  onQuickAddOne: (item: WorthItem, e: React.MouseEvent) => void;
+  onToggleToday: (item: WorthItem, e: React.MouseEvent) => void;
   onOpenAddItem: () => void;
 }
 
@@ -15,7 +15,7 @@ export const TodayStoriesTray: React.FC<TodayStoriesTrayProps> = ({
   items,
   records,
   consecutiveStreak,
-  onQuickAddOne,
+  onToggleToday,
   onOpenAddItem,
 }) => {
   const todayStr = getTodayDateString();
@@ -29,7 +29,7 @@ export const TodayStoriesTray: React.FC<TodayStoriesTrayProps> = ({
 
   // Logged today IDs
   const loggedTodayItemIds = new Set(
-    records.filter((r) => r.usedAt === todayStr && r.quantity > 0).map((r) => r.itemId)
+    records.filter((r) => r.usedAt === todayStr && r.quantity > 0 && r.source === 'daily-check').map((r) => r.itemId)
   );
 
   const completedTodayCount = activeUsageItems.filter((it) =>
@@ -102,14 +102,14 @@ export const TodayStoriesTray: React.FC<TodayStoriesTrayProps> = ({
           return (
             <button
               type="button"
-              disabled={isLogged}
-              aria-label={`${item.name} ${isLogged ? '오늘 기록 완료' : '오늘 사용 1회 기록'}`}
+              aria-pressed={isLogged}
+              aria-label={`${item.name} ${isLogged ? '오늘 사용 체크 취소' : '오늘 사용 1회 기록'}`}
               key={item.id}
               onClick={(e) => {
-                onQuickAddOne(item, e);
+                onToggleToday(item, e);
               }}
               className="flex flex-col items-center gap-1 shrink-0 cursor-pointer disabled:cursor-default group relative enabled:active:scale-95 transition-transform rounded-xl focus-visible:outline-2 focus-visible:outline-emerald-600"
-              title={`${item.name} · ${isLogged ? '오늘 기록 완료' : '탭하여 오늘 1회 기록'}`}
+              title={`${item.name} · ${isLogged ? '다시 누르면 오늘 사용 체크 취소' : '탭하여 오늘 1회 기록'}`}
             >
               {/* Circular Avatar with Instagram-style Ring */}
               <div
@@ -140,7 +140,7 @@ export const TodayStoriesTray: React.FC<TodayStoriesTrayProps> = ({
                 {item.name}
               </span>
               <span className={`text-[10px] ${isLogged ? 'text-emerald-700' : 'text-slate-500'}`}>
-                {isLogged ? '오늘 완료' : '눌러서 기록'}
+                {isLogged ? '눌러서 취소' : '눌러서 기록'}
               </span>
             </button>
           );
@@ -148,7 +148,7 @@ export const TodayStoriesTray: React.FC<TodayStoriesTrayProps> = ({
       </div>
 
       <p className="text-[11px] text-slate-500 leading-relaxed">
-        아이콘을 누르면 오늘 사용 1회가 바로 기록돼요. 추가 사용은 아래 소비 카드의 +1로 기록해 주세요.
+        아이콘을 누르면 1회 기록되고, 다시 누르면 이 체크로 추가한 기록만 취소돼요. 추가 사용은 소비 카드의 +1로 기록해 주세요.
       </p>
     </div>
   );

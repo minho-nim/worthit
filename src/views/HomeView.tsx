@@ -36,6 +36,7 @@ interface HomeViewProps {
   onOpenAddItem: () => void;
   onSelectItem: (item: WorthItem) => void;
   onQuickAddOne: (item: WorthItem, e: React.MouseEvent) => void;
+  onToggleToday: (item: WorthItem, e: React.MouseEvent) => void;
   onOpenLogModal: (item: WorthItem) => void;
   onNavigateToItems: () => void;
   onNavigateToAnalytics?: () => void;
@@ -51,6 +52,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
   onOpenAddItem,
   onSelectItem,
   onQuickAddOne,
+  onToggleToday,
   onOpenLogModal,
   onNavigateToItems,
   onNavigateToAnalytics,
@@ -196,7 +198,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
         items={items}
         records={records}
         consecutiveStreak={consecutiveStreak}
-        onQuickAddOne={onQuickAddOne}
+        onToggleToday={onToggleToday}
         onOpenAddItem={onOpenAddItem}
       />
 
