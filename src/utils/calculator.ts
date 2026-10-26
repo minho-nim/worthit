@@ -285,116 +285,116 @@ export function calculateConsecutiveDaysStreak(records: UsageRecord[]): number {
 }
 
 /**
- * Returns an everyday price comparison based on 2026 Korean prices.
+ * Returns representative everyday purchases for each price band, not market averages.
  * Small amounts use tighter bands so changes in low unit costs are easier to notice.
  */
 export function getRealLifeEquivalence(cost: number): { emoji: string; label: string; text: string } {
   if (cost <= 0) {
-    return { emoji: '✨', label: '완전 무료', text: '0원으로 매일 누리는 갓성비' };
+    return { emoji: '✨', label: '완전 무료', text: '추가 지출 없이 누리는 가치' };
   }
   if (cost <= 500) {
-    return { emoji: '🍬', label: '사탕이나 껌 하나 (500원 안팎)', text: '가벼운 간식 하나 정도의 금액' };
+    return { emoji: '🍬', label: '사탕 한 개', text: '주머니 동전으로 살 수 있는 작은 간식' };
   }
   if (cost <= 1000) {
-    return { emoji: '💧', label: '편의점 생수나 작은 간식 (1,000원 안팎)', text: '편의점에서 생수나 저렴한 간식 하나' };
+    return { emoji: '🖊️', label: '볼펜 한 자루', text: '자주 쓰는 기본 문구 하나를 사는 금액' };
   }
   if (cost <= 1500) {
-    return { emoji: '🚌', label: '서울 시내버스 기본요금 (1,500원)', text: '서울 간·지선버스 교통카드 1회 요금' };
+    return { emoji: '🚌', label: '서울 시내버스 한 번', text: '성인 교통카드 기본요금 1,500원 기준' };
   }
   if (cost <= 2000) {
-    return { emoji: '🍜', label: '편의점 컵라면 하나 (2,000원 안팎)', text: '간단히 허기를 달래는 편의점 간식' };
+    return { emoji: '🧻', label: '물티슈 한 팩', text: '일상에서 자주 다시 사는 생활 소모품' };
   }
   if (cost <= 2500) {
-    return { emoji: '🥤', label: '편의점 간편식과 음료', text: '간단한 먹거리와 마실 것을 함께 사는 금액' };
+    return { emoji: '🧽', label: '주방 수세미 한 묶음', text: '설거지할 때 쓰는 작은 생활용품' };
   }
   if (cost <= 3000) {
-    return { emoji: '🚌', label: '서울 시내버스 왕복 한 번', text: '기본요금 1,500원 기준 왕복 교통비' };
+    return { emoji: '📓', label: '노트 한 권', text: '학교나 회사에서 쓰는 기본 노트 가격대' };
   }
   if (cost <= 3500) {
-    return { emoji: '🥪', label: '편의점 간편식 한 끼', text: '삼각김밥이나 샌드위치로 간단히 해결하는 가격' };
+    return { emoji: '🔋', label: '건전지 한 묶음', text: '리모컨이나 생활기기에 넣는 소모품' };
   }
   if (cost <= 4000) {
-    return { emoji: '🍙', label: '김밥 한 줄 (4,000원 안팎)', text: '2026년 서울 평균에 가까운 기본 김밥 한 줄' };
+    return { emoji: '🪥', label: '칫솔 세트', text: '매일 쓰고 주기적으로 바꾸는 위생용품' };
   }
   if (cost <= 4500) {
-    return { emoji: '📦', label: '편의점 택배 한 건', text: '작은 물건을 국내로 보내는 기본 배송비 수준' };
+    return { emoji: '📦', label: '편의점 택배 한 건', text: '작은 물건을 국내로 보내는 배송비 수준' };
   }
   if (cost <= 5000) {
-    return { emoji: '🚕', label: '서울 중형택시 기본요금', text: '기본거리 1.6km까지의 주간 기본요금' };
+    return { emoji: '🚕', label: '서울 택시 기본요금', text: '주간 중형택시 기본요금 4,800원 기준' };
   }
   if (cost <= 6000) {
-    return { emoji: '☕', label: '프랜차이즈 아메리카노 한 잔', text: '일반 카페에서 커피를 사는 가격대' };
+    return { emoji: '☕', label: '카페 커피 한 잔', text: '매장에서 사 마시는 음료 한 잔 가격대' };
   }
   if (cost <= 7000) {
-    return { emoji: '🥐', label: '카페 음료와 베이커리 간식', text: '커피나 음료에 작은 빵을 곁들이는 금액' };
+    return { emoji: '🔌', label: '휴대폰 충전 케이블', text: '일반형 케이블 하나를 교체하는 금액' };
   }
   if (cost <= 8000) {
-    return { emoji: '🍜', label: '짜장면 한 그릇 (7,000원대)', text: '2026년 서울 평균 가격대의 짜장면 한 그릇' };
+    return { emoji: '🧴', label: '샴푸 리필 한 팩', text: '욕실에서 자주 보충하는 생활 소모품' };
   }
   if (cost <= 9000) {
-    return { emoji: '🍲', label: '김치찌개 백반 한 끼 (8,000원대)', text: '밥과 반찬을 곁들인 기본 백반 한 끼' };
+    return { emoji: '🤲', label: '핸드크림 한 개', text: '가볍게 구매하는 기본 보습용품' };
   }
   if (cost <= 10000) {
-    return { emoji: '🍜', label: '칼국수 한 그릇 (1만원 안팎)', text: '식당에서 따뜻한 면 요리 한 끼' };
+    return { emoji: '☂️', label: '기본 우산 한 개', text: '갑작스러운 비에 사는 실용적인 생활용품' };
   }
   if (cost <= 12000) {
-    return { emoji: '🥗', label: '비빔밥 한 그릇 (1만 원대 초반)', text: '2026년 서울 평균에 가까운 비빔밥 한 그릇' };
+    return { emoji: '🎵', label: '음악 스트리밍 한 달', text: '개인용 음원 구독 요금제에 가까운 금액' };
   }
   if (cost <= 15000) {
-    return { emoji: '🍜', label: '냉면 한 그릇 (1만 원대 초중반)', text: '2026년 서울 평균 가격대의 외식 냉면 한 그릇' };
+    return { emoji: '🎬', label: '일반 영화 관람권 한 장', text: '성인 일반 2D 영화 한 편을 보는 가격대' };
   }
   if (cost <= 18000) {
-    return { emoji: '🎬', label: '영화 관람권 한 장', text: '극장에서 영화 한 편을 보는 비용에 가까운 금액' };
+    return { emoji: '📚', label: '단행본 한 권', text: '서점에서 에세이나 소설 한 권을 사는 금액' };
   }
   if (cost <= 20000) {
-    return { emoji: '🍲', label: '삼계탕 한 그릇 (1만 원대 후반)', text: '2026년 서울 평균 가격대의 삼계탕 한 그릇' };
+    return { emoji: '📱', label: '휴대폰 케이스 한 개', text: '일반형 케이스로 휴대폰을 보호하는 비용' };
   }
   if (cost <= 30000) {
-    return { emoji: '🥩', label: '삼겹살 200g 외식 1인분 (2만원대)', text: '2026년 서울 평균 가격대의 삼겹살 1인분' };
+    return { emoji: '👕', label: '기본 티셔츠 한 장', text: '자주 입는 일상복 하나를 사는 금액' };
   }
   if (cost <= 45000) {
-    return { emoji: '🍗', label: '치킨 한 마리와 배달 주문', text: '치킨 한 마리에 배달·사이드 메뉴를 더한 가격' };
+    return { emoji: '🔋', label: '보조배터리 한 개', text: '외출할 때 챙기는 충전용품 가격대' };
   }
   if (cost <= 60000) {
-    return { emoji: '🥩', label: '삼겹살 2인 외식', text: '고기와 식사를 곁들인 두 사람 외식' };
+    return { emoji: '🖱️', label: '무선 마우스 한 개', text: '업무나 공부에 쓰는 컴퓨터 주변기기' };
   }
   if (cost <= 90000) {
-    return { emoji: '📱', label: '한 달 휴대폰 요금과 구독료', text: '요금제와 이용 서비스에 따라 달라지는 월간 디지털 지출' };
+    return { emoji: '👟', label: '일상용 운동화 한 켤레', text: '출퇴근이나 가벼운 운동에 신는 신발 가격대' };
   }
   if (cost <= 120000) {
-    return { emoji: '🎟️', label: '공연 티켓 두 장 또는 고급 외식', text: '두 사람이 함께 즐기는 공연이나 특별한 식사' };
+    return { emoji: '🏋️', label: '헬스장 한 달 이용', text: '장기 등록 할인 전 월 이용권에 가까운 금액' };
   }
   if (cost <= 300000) {
-    return { emoji: '✈️', label: '국내 여행 교통과 숙박', text: '1~2명이 떠나는 짧은 국내 여행의 일부 비용' };
+    return { emoji: '🎧', label: '무선 헤드폰 한 개', text: '음악 감상과 통화에 쓰는 오디오 기기 가격대' };
   }
   if (cost <= 500000) {
-    return { emoji: '🎮', label: '게임기나 소형 가전 한 대', text: '많이 찾는 전자기기나 생활가전 구매 비용' };
+    return { emoji: '⌚', label: '스마트워치 한 대', text: '운동 기록과 알림에 쓰는 웨어러블 기기' };
   }
   if (cost <= 800000) {
-    return { emoji: '📱', label: '중급 스마트폰이나 태블릿 한 대', text: '일상적으로 많이 쓰는 모바일 기기 가격대' };
+    return { emoji: '🧹', label: '로봇청소기 한 대', text: '집안일을 줄여 주는 중급 청소가전 가격대' };
   }
   if (cost <= 1000000) {
-    return { emoji: '💻', label: '실속형 노트북 한 대', text: '학업이나 업무에 쓰는 보급형 노트북 가격대' };
+    return { emoji: '🧺', label: '드럼세탁기 한 대', text: '가정에서 자주 사용하는 기본 세탁가전' };
   }
   if (cost <= 1200000) {
-    return { emoji: '💻', label: '태블릿과 액세서리 구성', text: '태블릿 본체에 키보드나 펜을 더한 구매 비용' };
+    return { emoji: '💻', label: '일반 노트북 한 대', text: '학업과 사무 작업에 쓰는 노트북 가격대' };
   }
   if (cost <= 1800000) {
-    return { emoji: '📱', label: '기본형 플래그십 스마트폰', text: '갤럭시 S26·S26+급 스마트폰 가격대' };
+    return { emoji: '🧊', label: '가정용 냉장고 한 대', text: '매일 사용하는 대형 생활가전 가격대' };
   }
   if (cost <= 2600000) {
-    return { emoji: '📱', label: '플래그십 Pro·Ultra 스마트폰', text: '갤럭시 S26 Ultra나 iPhone Pro급 가격대' };
+    return { emoji: '📱', label: '프리미엄 스마트폰 한 대', text: '갤럭시 Ultra나 iPhone Pro급 기기의 구매 비용' };
   }
   if (cost <= 4000000) {
-    return { emoji: '📱', label: '폴더블 또는 초고용량 프리미엄 스마트폰', text: '최상위 저장용량이나 접히는 화면을 갖춘 기기 가격대' };
+    return { emoji: '🖥️', label: '게이밍 PC 한 대', text: '게임과 작업용으로 구성하는 고성능 데스크톱' };
   }
   if (cost <= 7000000) {
-    return { emoji: '✈️', label: '2인 해외여행 항공·숙박비', text: '여행 시기와 지역에 따라 달라지는 두 사람의 여행 경비' };
+    return { emoji: '✈️', label: '두 사람의 해외여행', text: '항공과 숙박을 포함한 두 사람의 여행 경비' };
   }
   if (cost <= 10000000) {
-    return { emoji: '🛋️', label: '대형 가전 여러 대 또는 가구 교체', text: '냉장고·세탁기 같은 생활가전을 함께 바꾸는 비용' };
+    return { emoji: '🚙', label: '중고 경차 한 대', text: '연식과 주행거리에 따라 달라지는 실용 차량 가격대' };
   }
-  return { emoji: '🚗', label: '자동차/대형 자산 투자 (1,000만원 초과)', text: '인생의 초대형 투자, 아낌없이 뽕을 뽑을 차례!' };
+  return { emoji: '🚗', label: '신차 구매 비용', text: '차종과 옵션에 따라 달라지는 자동차 구매 예산' };
 }
 
 /**
