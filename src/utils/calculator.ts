@@ -285,77 +285,99 @@ export function calculateConsecutiveDaysStreak(records: UsageRecord[]): number {
 }
 
 /**
- * Returns intuitive everyday life price equivalence with wide ranges (100원 ~ 1,000,000원+)
+ * Returns an everyday price comparison based on 2026 Korean prices.
+ * Small amounts use tighter bands so changes in low unit costs are easier to notice.
  */
 export function getRealLifeEquivalence(cost: number): { emoji: string; label: string; text: string } {
   if (cost <= 0) {
     return { emoji: '✨', label: '완전 무료', text: '0원으로 매일 누리는 갓성비' };
   }
-  if (cost <= 100) {
-    return { emoji: '🍬', label: '막대사탕 한 알 (100원)', text: '숨만 쉬어도 본전 뽑는 경지!' };
-  }
   if (cost <= 500) {
-    return { emoji: '🍦', label: '막대 아이스크림 1개 (500원)', text: '할인점 아이스크림 하나 가격!' };
+    return { emoji: '🍬', label: '사탕이나 껌 하나 (500원 안팎)', text: '가벼운 간식 하나 정도의 금액' };
   }
   if (cost <= 1000) {
-    return { emoji: '🐟', label: '붕어빵 1마리 (1,000원)', text: '천원의 행복, 거의 본전 완료!' };
+    return { emoji: '💧', label: '편의점 생수나 작은 간식 (1,000원 안팎)', text: '편의점에서 생수나 저렴한 간식 하나' };
+  }
+  if (cost <= 1500) {
+    return { emoji: '🚌', label: '서울 시내버스 기본요금 (1,500원)', text: '서울 간·지선버스 교통카드 1회 요금' };
   }
   if (cost <= 2000) {
-    return { emoji: '🚌', label: '시내버스 요금 (2,000원 이하)', text: '대중교통 1번 타는 비용' };
+    return { emoji: '🍜', label: '편의점 컵라면 하나 (2,000원 안팎)', text: '간단히 허기를 달래는 편의점 간식' };
+  }
+  if (cost <= 2500) {
+    return { emoji: '🍙', label: '삼각김밥 한 개와 작은 음료', text: '편의점에서 간단히 챙기는 요기' };
+  }
+  if (cost <= 3000) {
+    return { emoji: '🍙', label: '삼각김밥과 생수', text: '가벼운 편의점 한 끼에 가까운 금액' };
   }
   if (cost <= 3500) {
-    return { emoji: '🍙', label: '삼각김밥 & 생수', text: '가벼운 편의점 요기 수준' };
+    return { emoji: '🥪', label: '편의점 간편식 한 끼', text: '삼각김밥이나 샌드위치로 간단히 해결하는 가격' };
+  }
+  if (cost <= 4000) {
+    return { emoji: '🍙', label: '김밥 한 줄 (4,000원 안팎)', text: '2026년 서울 평균에 가까운 기본 김밥 한 줄' };
+  }
+  if (cost <= 4500) {
+    return { emoji: '☕', label: '저렴한 카페 아메리카노 한 잔', text: '가성비 커피 전문점 음료 한 잔' };
   }
   if (cost <= 5000) {
-    return { emoji: '☕', label: '아메리카노 1잔 (5,000원 이하)', text: '카페 커피 한 잔 가격' };
+    return { emoji: '☕', label: '일반 프랜차이즈 아메리카노 한 잔', text: '카페에서 커피 한 잔을 사는 가격' };
   }
   if (cost <= 6000) {
-    return { emoji: '🥐', label: '커피와 작은 간식 (6,000원대)', text: '커피에 간단한 빵이나 과자를 곁들이는 가격' };
+    return { emoji: '🥐', label: '커피와 작은 빵 하나', text: '커피에 베이커리 간식을 곁들이는 가격' };
   }
   if (cost <= 7000) {
-    return { emoji: '🍰', label: '커피와 디저트 (7,000원대)', text: '카페 음료와 작은 디저트 한 번' };
+    return { emoji: '🥟', label: '분식 한 끼', text: '김밥이나 떡볶이 등으로 간단히 먹는 가격' };
   }
   if (cost <= 8000) {
-    return { emoji: '🥟', label: '분식 한 끼 (8,000원대)', text: '간단한 분식으로 한 끼 해결하는 가격' };
+    return { emoji: '🍜', label: '짜장면 한 그릇 (7,000원대)', text: '2026년 서울 평균 가격대의 짜장면 한 그릇' };
   }
   if (cost <= 9000) {
-    return { emoji: '🍜', label: '국수나 간단한 백반 (9,000원대)', text: '가볍게 먹는 한 끼 식사 가격' };
+    return { emoji: '🍲', label: '김치찌개 백반 한 끼 (8,000원대)', text: '밥과 반찬을 곁들인 기본 백반 한 끼' };
   }
   if (cost <= 10000) {
-    return { emoji: '🍚', label: '만원짜리 한 끼', text: '식당에서 기본 식사 한 번' };
+    return { emoji: '🍜', label: '칼국수 한 그릇 (1만원 안팎)', text: '식당에서 따뜻한 면 요리 한 끼' };
   }
   if (cost <= 12000) {
-    return { emoji: '🍱', label: '든든한 밥 한 끼 (1만원대)', text: '따뜻한 점심 식사 가격' };
+    return { emoji: '🥗', label: '비빔밥 한 그릇 (1만 원대 초반)', text: '2026년 서울 평균에 가까운 비빔밥 한 그릇' };
+  }
+  if (cost <= 15000) {
+    return { emoji: '🍜', label: '냉면 한 그릇 (1만 원대 초중반)', text: '2026년 서울 평균 가격대의 외식 냉면 한 그릇' };
   }
   if (cost <= 18000) {
-    return { emoji: '🎬', label: '주말 영화 티켓 (1.5만원대)', text: '영화 한 편 관람료 수준' };
+    return { emoji: '🍱', label: '외식 한 끼와 음료', text: '식사에 음료까지 곁들이는 가격' };
+  }
+  if (cost <= 20000) {
+    return { emoji: '🍲', label: '삼계탕 한 그릇 (1만 원대 후반)', text: '2026년 서울 평균 가격대의 삼계탕 한 그릇' };
   }
   if (cost <= 30000) {
-    return { emoji: '🍗', label: '치킨 한 마리 세트 (3만원)', text: '야식 치맥 한 번의 가치' };
+    return { emoji: '🥩', label: '삼겹살 200g 외식 1인분 (2만원대)', text: '2026년 서울 평균 가격대의 삼겹살 1인분' };
+  }
+  if (cost <= 45000) {
+    return { emoji: '🍗', label: '치킨 한 마리와 배달 주문', text: '치킨 한 마리에 배달·사이드 메뉴를 더한 가격' };
   }
   if (cost <= 60000) {
-    return { emoji: '🥩', label: '패밀리 레스토랑 외식 (5만원대)', text: '근사한 주말 외식 1회 수준' };
+    return { emoji: '🥩', label: '삼겹살 2인 외식', text: '고기와 식사를 곁들인 두 사람 외식' };
   }
   if (cost <= 90000) {
-    return { emoji: '🍽️', label: '호텔 뷔페나 고급 외식 (6~9만원대)', text: '조금 특별한 외식 한 번의 가격' };
+    return { emoji: '🍽️', label: '두 사람의 조금 특별한 외식', text: '평소보다 여유 있게 즐기는 외식 한 번' };
   }
   if (cost <= 120000) {
-    return { emoji: '🍣', label: '스시 오마카세 / 콘서트 (9~12만원대)', text: '특별한 날 즐기는 가치' };
+    return { emoji: '🎟️', label: '공연 티켓이나 고급 코스 식사', text: '특별한 날 한 사람 또는 두 사람이 즐기는 경험' };
   }
   if (cost <= 300000) {
-    return { emoji: '✈️', label: '제주도 왕복 항공권 (20~30만원)', text: '주말 제주 힐링 여행 수준' };
+    return { emoji: '✈️', label: '국내 여행 교통과 숙박', text: '1~2명이 떠나는 짧은 국내 여행의 일부 비용' };
   }
   if (cost <= 500000) {
-    return { emoji: '🎮', label: '차세대 콘솔 게임기 (40~50만원)', text: '닌텐도 / 플스 콘솔 1대 값' };
+    return { emoji: '🎮', label: '게임 콘솔이나 국내 주말여행', text: '기기 하나 또는 두 사람의 짧은 여행 경비' };
   }
   if (cost <= 800000) {
-    return { emoji: '🏨', label: '5성급 럭셔리 호캉스 (70~80만원)', text: '특급 호텔 스위트룸 숙박' };
+    return { emoji: '🏨', label: '호텔 숙박을 포함한 국내 여행', text: '숙박과 교통, 식사를 묶은 여행 경비' };
   }
   if (cost <= 1000000) {
-    return { emoji: '📱', label: '프리미엄 스마트폰 (80~100만원)', text: '가성비 좋은 스마트폰 한 대 가격' };
+    return { emoji: '📱', label: '중상급 스마트폰 한 대 (80~100만원)', text: '기종과 구매 시점에 따라 달라지는 스마트폰 가격대' };
   }
   if (cost <= 1200000) {
-    return { emoji: '📱', label: '최신 플래그십 스마트폰 (100~120만원)', text: '최신 아이폰/갤럭시 한 대 가격' };
+    return { emoji: '📱', label: '플래그십 스마트폰 한 대 (100~120만원)', text: '최신 스마트폰 기본 모델의 가격대' };
   }
   if (cost <= 1800000) {
     return { emoji: '💻', label: '프리미엄 노트북/맥북 (150만원대)', text: '고성능 업무용 노트북 1대 수준' };
