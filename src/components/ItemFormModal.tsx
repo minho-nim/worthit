@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { getTargetRecommendations } from '../utils/targetRecommendations';
 import {
   X,
   Package,
@@ -216,25 +217,9 @@ export const ItemFormModal: React.FC<ItemFormModalProps> = ({
 
   // Smart auto-recommend target price when price changes
   const autoRecommendTarget = (price: number, method: UsageMethod, unit: UsageUnit) => {
-    if (price <= 0) return;
-    if (method === 'days') {
-      // Recommend 1 year (365 days) target as a friendly default
-      const daily1Year = Math.max(1, Math.round(price / 365));
-      setTargetUnitCost(daily1Year.toString());
-    } else {
-      // Recommend 30 uses target as a friendly default
-      const targetPerUse = Math.max(1, Math.round(price / 30));
-      setTargetUnitCost(targetPerUse.toString());
-    }
-  };
-
-  // Quick target counts selector (e.g. "총 20회 쓰면 본전", "30회", "50회", "100회")
-  const handleSetTargetByCount = (count: number) => {
-    const price = Number(purchasePrice) || 0;
-    if (price > 0 && count > 0) {
-      const calculatedTarget = Math.max(1, Math.round(price / count));
-      setTargetUnitCost(calculatedTarget.toString());
-    }
+    const suggestion = getTargetRecommendations(price, method, unit, category, billingCycle)
+      .find(option => option.recommended);
+    if (suggestion) setTargetUnitCost(String(suggestion.unitCost));
   };
 
   // Validation
@@ -297,6 +282,7 @@ export const ItemFormModal: React.FC<ItemFormModalProps> = ({
   const isDays = usageMethod === 'days';
   const effectiveUnit = isDays ? '일' : usageUnit;
   const requiredCount = calculateRequiredUsage(priceNum, targetCostNum, effectiveUnit);
+  const targetRecommendations = getTargetRecommendations(priceNum, usageMethod, usageUnit, category, billingCycle);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/50 backdrop-blur-sm animate-in fade-in duration-200">
@@ -488,29 +474,31 @@ export const ItemFormModal: React.FC<ItemFormModalProps> = ({
           {/* 5. Target Unit Cost & Goal Presets */}
           <div>
             <div className="flex items-center justify-between mb-1">
-              <label className="text-xs font-bold text-slate-800">
+              <label htmlFor="target-unit-cost" className="text-xs font-bold text-slate-800">
                 목표 사용단가 ({isDays ? '원/일' : `원/${usageUnit}`})
               </label>
               <span className="text-[11px] text-slate-500">
-                이 단가 이하로 떨어지면 본전 달성!
+                내가 만족할 사용 비용
               </span>
             </div>
 
             <div className="relative">
               <input
-                type="number"
-                min="1"
-                step="any"
+                id="target-unit-cost"
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
                 placeholder="자유롭게 입력 (예: 500, 1000, 2500...)"
                 value={targetUnitCost}
                 onChange={(e) => {
+                  if (!/^\d*$/.test(e.target.value)) return;
                   setTargetUnitCost(e.target.value);
                   if (errors.targetUnitCost)
                     setErrors((prev) => ({ ...prev, targetUnitCost: '' }));
                 }}
-                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm text-slate-900 focus:outline-none focus:border-emerald-600"
+                className="w-full pl-3.5 pr-28 py-2.5 rounded-xl border border-slate-200 text-sm text-slate-900 focus:outline-none focus:border-emerald-600"
               />
-              <span className="absolute right-3.5 top-2.5 text-xs text-slate-400 font-medium">
+              <span className="absolute right-3.5 top-2.5 text-xs text-slate-400 font-medium pointer-events-none">
                 {targetUnitCost && !isNaN(Number(targetUnitCost))
                   ? formatKRW(Number(targetUnitCost))
                   : ''}
@@ -520,23 +508,28 @@ export const ItemFormModal: React.FC<ItemFormModalProps> = ({
               <p className="text-xs text-rose-500 mt-1">{errors.targetUnitCost}</p>
             )}
 
-            {/* Quick "총 N번 사용 시 본전" Helper Chips */}
-            {priceNum > 0 && (
-              <div className="flex items-center gap-1.5 mt-2 flex-wrap">
-                <span className="text-[11px] text-slate-400">목표 기준:</span>
-                {(isDays ? [180, 365, 730] : [20, 30, 50, 100]).map((count) => (
+            <div className="mt-3 p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
+              <p className="text-xs font-semibold text-slate-800">목표 단가, 이렇게 정해보세요</p>
+              <p className="text-xs text-slate-500 leading-relaxed">
+                {category === 'subscription'
+                  ? '한 결제기간 동안 실제로 쓸 횟수나 시간을 골라보세요. 결제금액을 예상 사용량으로 나누어 계산해요.'
+                  : '앞으로 충분히 쓸 수 있는 횟수나 기간을 먼저 정해보세요. 구매금액을 예상 사용량으로 나누면 목표 단가가 돼요.'}
+              </p>
+              {targetRecommendations.length > 0 ? <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                {targetRecommendations.map((option) => (
                   <button
                     type="button"
-                    key={count}
-                    onClick={() => handleSetTargetByCount(count)}
-                    className="px-2.5 py-1 text-xs rounded-lg border border-slate-200 bg-slate-50 hover:bg-emerald-50 hover:border-emerald-400 hover:text-emerald-800 text-slate-600 font-medium transition-colors"
+                    key={option.count}
+                    onClick={() => { setTargetUnitCost(String(option.unitCost)); setErrors(prev => ({ ...prev, targetUnitCost: '' })); }}
+                    className={`p-2.5 text-left text-xs rounded-lg border transition-colors ${Number(targetUnitCost) === option.unitCost ? 'bg-emerald-50 border-emerald-500 text-emerald-900' : 'bg-white border-slate-200 text-slate-600 hover:border-emerald-400'}`}
                   >
-                    총 {count}
-                    {isDays ? '일' : usageUnit} 목표
+                    <span className="block">{option.label}{option.recommended && ' · 추천'}</span>
+                    <strong className="block mt-1">{formatKRW(option.unitCost)}/{effectiveUnit}</strong>
                   </button>
                 ))}
-              </div>
-            )}
+              </div> : <p className="text-xs text-slate-400">구매금액을 입력하면 추천 금액이 표시돼요.</p>}
+              <p className="text-[11px] text-slate-500">추천은 설정 예시예요. 내 사용 계획에 맞춰 직접 바꿀 수 있어요. 계산 금액은 1원 단위로 올림해요.</p>
+            </div>
           </div>
 
           {/* 6. Live Result Preview Box */}
@@ -546,7 +539,7 @@ export const ItemFormModal: React.FC<ItemFormModalProps> = ({
               <span>총 {requiredCount}{effectiveUnit} 필요</span>
             </div>
             <p className="text-xs text-emerald-800 leading-relaxed">
-              <strong>{formatKRW(priceNum)}</strong>에 구매하여, 앞으로{' '}
+              <strong>{formatKRW(priceNum)}</strong>에 구매하여, 총{' '}
               <strong>{requiredCount}{effectiveUnit}</strong>을 사용하면 목표 단가(
               <strong>{formatKRW(targetCostNum)}/{effectiveUnit}</strong>)에 도달해 본전을
               뽑게 됩니다!

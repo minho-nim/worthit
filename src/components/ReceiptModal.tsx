@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { X, Check, Copy, Sparkles, TrendingUp, Download } from 'lucide-react';
 import { ItemStats } from '../types';
 import { formatKRW, formatDate, getRealLifeEquivalence } from '../utils/calculator';
@@ -17,6 +17,30 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({
   onCopySuccess,
 }) => {
   const [copied, setCopied] = useState(false);
+  const [copyError, setCopyError] = useState('');
+  const closeButton = useRef<HTMLButtonElement>(null);
+  const onCloseRef = useRef(onClose);
+  useEffect(() => { onCloseRef.current = onClose; }, [onClose]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const previousFocus = document.activeElement as HTMLElement | null;
+    setCopied(false);
+    setCopyError('');
+    closeButton.current?.focus();
+    const handleKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        event.stopPropagation();
+        onCloseRef.current();
+      }
+    };
+    document.addEventListener('keydown', handleKey, true);
+    return () => {
+      document.removeEventListener('keydown', handleKey, true);
+      previousFocus?.focus();
+    };
+  }, [isOpen]);
 
   if (!isOpen || !stats) return null;
 
@@ -28,21 +52,27 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({
   const handleCopySummary = () => {
     const text = `🧾 [WorthIt 본전 영수증]\n항목: ${item.name}\n구매가: ${formatKRW(item.purchasePrice)}\n현재 사용단가: ${stats.unitCostFormatted}\n목표 단가: ${stats.targetCostFormatted}\n달성률: ${progress}%\n현실 체감 가치: ${equivalence.emoji} ${equivalence.label} (${equivalence.text})\n상태: ${isGoalAchieved ? '🎉 본전 달성 완료!' : '꾸준히 가치 창출 중!'}\n\n#WorthIt #본전뽑기 #가치소비`;
 
+    setCopyError('');
     navigator.clipboard.writeText(text).then(() => {
       setCopied(true);
       onCopySuccess();
       setTimeout(() => setCopied(false), 2000);
-    });
+    }).catch(() => setCopyError('복사하지 못했어요. 브라우저의 클립보드 권한을 확인해 주세요.'));
   };
 
   return (
-    <div className="fixed inset-0 z-60 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-slate-200 relative overflow-hidden flex flex-col items-center">
+    <div
+      className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-in fade-in duration-200"
+      onClick={(event) => { if (event.target === event.currentTarget) onClose(); }}
+    >
+      <div role="dialog" aria-modal="true" aria-labelledby="receipt-title" className="bg-white rounded-3xl max-w-sm w-full max-h-[90dvh] overflow-y-auto p-6 pt-14 shadow-2xl border border-slate-200 relative flex flex-col items-center">
         {/* Close Button */}
         <button
+          ref={closeButton}
+          type="button"
           onClick={onClose}
-          className="absolute top-4 right-4 p-1.5 text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-100"
-          aria-label="닫기"
+          className="absolute z-10 top-3 right-3 p-2 text-slate-600 hover:text-slate-900 rounded-lg hover:bg-slate-100"
+          aria-label="영수증 닫기"
         >
           <X className="w-5 h-5" />
         </button>
@@ -54,7 +84,7 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({
             <span className="text-[10px] tracking-widest text-slate-400 uppercase font-sans font-bold">
               OFFICIAL VALUE RECEIPT
             </span>
-            <h3 className="text-base font-bold tracking-tight text-slate-900 font-sans mt-0.5">
+            <h3 id="receipt-title" className="text-base font-bold tracking-tight text-slate-900 font-sans mt-0.5">
               WorthIt 가치 증명서
             </h3>
             <p className="text-[11px] text-slate-500 font-sans mt-0.5">
@@ -139,6 +169,7 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({
 
         {/* Copy Action */}
         <div className="w-full mt-4 flex gap-2">
+          <button type="button" onClick={onClose} className="px-4 py-2.5 rounded-xl border border-slate-200 text-sm font-semibold text-slate-600 hover:bg-slate-50">닫기</button>
           <button
             type="button"
             onClick={handleCopySummary}
@@ -157,6 +188,7 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({
             )}
           </button>
         </div>
+        {copyError && <p role="alert" className="mt-2 text-xs text-rose-600">{copyError}</p>}
       </div>
     </div>
   );

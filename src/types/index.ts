@@ -85,13 +85,12 @@ export interface ToastMessage {
 
 export interface OverallWorthScore {
   averageProgress: number; // 0 ~ 100
-  weightedProgress: number; // 0 ~ 100 weighted by purchasePrice
+  weightedProgress: number; // 0 ~ 100 weighted by total spending
   grade: string;
   gradeBadge: string;
   emoji: string;
   comment: string;
   totalSpent: number;
-  totalRecoveredValue: number;
   achievedCount: number;
   totalCount: number;
 }

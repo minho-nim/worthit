@@ -188,7 +188,7 @@ export const AnalyticsView: React.FC<AnalyticsViewProps> = ({
               </span>
             </div>
             <h3 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 font-mono tabular-nums">
-              소비 가치 회수율 <span className="text-emerald-600">{overallScore.averageProgress}%</span>
+              목표 대비 사용 진행률 <span className="text-emerald-600">{overallScore.averageProgress}%</span>
             </h3>
             <p className="text-xs text-slate-600 leading-relaxed max-w-md">
               {overallScore.comment}
@@ -197,18 +197,18 @@ export const AnalyticsView: React.FC<AnalyticsViewProps> = ({
 
           <div className="grid grid-cols-2 gap-2.5 sm:w-auto w-full shrink-0">
             <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-100 text-center">
-              <span className="text-[11px] text-slate-500 block font-medium">단순 평균 본전</span>
+              <span className="text-[11px] text-slate-500 block font-medium">항목별 평균 진행률</span>
               <strong className="text-xl font-extrabold text-slate-900 mt-0.5 block font-mono tabular-nums">
                 {overallScore.averageProgress}%
               </strong>
               <span className="text-[10px] text-slate-400">항목별 달성률 평균</span>
             </div>
             <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-100 text-center">
-              <span className="text-[11px] text-slate-500 block font-medium">금액 가중 회수율</span>
+              <span className="text-[11px] text-slate-500 block font-medium">금액 가중 진행률</span>
               <strong className="text-xl font-extrabold text-emerald-600 mt-0.5 block font-mono tabular-nums">
                 {overallScore.weightedProgress}%
               </strong>
-              <span className="text-[10px] text-slate-400">총 구매금액 대비</span>
+              <span className="text-[10px] text-slate-400">지출이 큰 항목에 더 큰 비중</span>
             </div>
           </div>
         </div>
@@ -216,15 +216,15 @@ export const AnalyticsView: React.FC<AnalyticsViewProps> = ({
         {/* Recovered Value Meter */}
         <div className="space-y-2 pt-2 border-t border-slate-100">
           <div className="flex justify-between items-baseline text-xs">
-            <span className="text-slate-600 font-medium">누적 가치 회수 현황</span>
+            <span className="text-slate-600 font-medium">목표 달성 항목</span>
             <span className="text-slate-900 font-semibold font-mono tabular-nums">
-              약 {formatKRW(overallScore.totalRecoveredValue)} <span className="text-slate-400 font-normal">/ {formatKRW(overallScore.totalSpent)}</span>
+              {overallScore.achievedCount}개 <span className="text-slate-400 font-normal">/ {overallScore.totalCount}개</span>
             </span>
           </div>
           <div className="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden">
             <div
               className="h-full bg-emerald-500 rounded-full transition-all duration-700"
-              style={{ width: `${Math.min(100, Math.max(3, overallScore.weightedProgress))}%` }}
+              style={{ width: `${Math.min(100, overallScore.averageProgress)}%` }}
             />
           </div>
         </div>
@@ -349,7 +349,7 @@ export const AnalyticsView: React.FC<AnalyticsViewProps> = ({
               <p>
                 <strong>{needsAttentionCategory.label}</strong> 카테고리의 평균 달성률이{' '}
                 <strong>{needsAttentionCategory.averageProgress}%</strong>로 상대적으로 낮아요.
-                조금만 더 자주 사용하거나 기록을 챙겨보시면 빠르게 본전을 회수할 수 있어요!
+                사용 기록을 쌓으면 설정한 목표 단가에 얼마나 가까워졌는지 확인할 수 있어요.
               </p>
             </div>
           )}

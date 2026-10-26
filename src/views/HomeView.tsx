@@ -216,7 +216,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
         {/* Top bar: title and subtle analytics link */}
         <div className="flex items-center justify-between">
           <span className="text-xs font-semibold text-slate-500 tracking-tight">
-            내 소비 본전 요약
+            목표 대비 사용 진행률
           </span>
           {onNavigateToAnalytics && (
             <button
@@ -242,7 +242,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
               </span>
             </div>
             <p className="text-xs text-slate-600 mt-1 font-medium">
-              지금까지 등록한 소비로 약 <strong className="text-slate-900 font-semibold">{formatKRW(overallScore.totalRecoveredValue)}</strong>의 가치를 뽑아냈어요.
+              직접 설정한 사용 횟수·기간을 기준으로 계산해요.
             </p>
           </div>
 

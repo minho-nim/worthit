@@ -440,7 +440,6 @@ export function calculateOverallWorthScore(itemStats: ItemStats[]): OverallWorth
       emoji: '🌱',
       comment: '첫 소비를 등록하고 본전 찾기 여정을 시작해 보세요!',
       totalSpent: 0,
-      totalRecoveredValue: 0,
       achievedCount: 0,
       totalCount: 0,
     };
@@ -450,19 +449,19 @@ export function calculateOverallWorthScore(itemStats: ItemStats[]): OverallWorth
   const achievedCount = itemStats.filter((s) => s.isGoalAchieved).length;
 
   let totalSpent = 0;
-  let totalRecoveredValue = 0;
+  let progressWeightedAmount = 0;
   let sumProgress = 0;
 
   itemStats.forEach((s) => {
-    const spend = s.item.purchasePrice || 0;
+    const spend = s.totalSpent || 0;
     totalSpent += spend;
     const clampedProg = Math.min(100, Math.max(0, s.progress));
     sumProgress += clampedProg;
-    totalRecoveredValue += Math.round(spend * (clampedProg / 100));
+    progressWeightedAmount += spend * (clampedProg / 100);
   });
 
   const averageProgress = Math.round(sumProgress / totalCount);
-  const weightedProgress = totalSpent > 0 ? Math.round((totalRecoveredValue / totalSpent) * 100) : averageProgress;
+  const weightedProgress = totalSpent > 0 ? Math.round((progressWeightedAmount / totalSpent) * 100) : averageProgress;
 
   let grade = '초기 단계';
   let gradeBadge = '시작';
@@ -471,21 +470,21 @@ export function calculateOverallWorthScore(itemStats: ItemStats[]): OverallWorth
 
   if (averageProgress >= 100) {
     grade = '목표 달성 완료';
-    gradeBadge = '100% 회수';
+    gradeBadge = '100% 달성';
     emoji = '✓';
     comment = '등록한 소비들의 목표 단가에 모두 도달했어요.';
   } else if (averageProgress >= 75) {
     grade = '본전 도달 임박';
     gradeBadge = '75% 이상';
     emoji = '🎯';
-    comment = '구매한 금액의 가치를 대부분 회수하며 알뜰하게 쓰고 있어요.';
+    comment = '설정한 사용 목표에 가까워졌어요.';
   } else if (averageProgress >= 50) {
-    grade = '절반 이상 회수';
+    grade = '목표 절반 이상 진행';
     gradeBadge = '50% 이상';
     emoji = '📈';
-    comment = '꾸준한 사용으로 구매 금액의 절반 이상을 뽑아냈어요.';
+    comment = '설정한 사용 목표를 평균 절반 이상 채웠어요.';
   } else if (averageProgress >= 25) {
-    grade = '가치 회수 진행 중';
+    grade = '목표를 향해 사용 중';
     gradeBadge = '25% 이상';
     emoji = '🌱';
     comment = '쓸 때마다 회당 단가가 점차 낮아지고 있어요.';
@@ -499,7 +498,6 @@ export function calculateOverallWorthScore(itemStats: ItemStats[]): OverallWorth
     emoji,
     comment,
     totalSpent,
-    totalRecoveredValue,
     achievedCount,
     totalCount,
   };
