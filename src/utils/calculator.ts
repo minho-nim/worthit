@@ -306,8 +306,23 @@ export function getRealLifeEquivalence(cost: number): { emoji: string; label: st
   if (cost <= 3500) {
     return { emoji: '🍙', label: '삼각김밥 & 생수', text: '가벼운 편의점 요기 수준' };
   }
-  if (cost <= 5500) {
-    return { emoji: '☕', label: '아메리카노 1잔 (5,000원대)', text: '카페 커피 한 잔 가격' };
+  if (cost <= 5000) {
+    return { emoji: '☕', label: '아메리카노 1잔 (5,000원 이하)', text: '카페 커피 한 잔 가격' };
+  }
+  if (cost <= 6000) {
+    return { emoji: '🥐', label: '커피와 작은 간식 (6,000원대)', text: '커피에 간단한 빵이나 과자를 곁들이는 가격' };
+  }
+  if (cost <= 7000) {
+    return { emoji: '🍰', label: '커피와 디저트 (7,000원대)', text: '카페 음료와 작은 디저트 한 번' };
+  }
+  if (cost <= 8000) {
+    return { emoji: '🥟', label: '분식 한 끼 (8,000원대)', text: '간단한 분식으로 한 끼 해결하는 가격' };
+  }
+  if (cost <= 9000) {
+    return { emoji: '🍜', label: '국수나 간단한 백반 (9,000원대)', text: '가볍게 먹는 한 끼 식사 가격' };
+  }
+  if (cost <= 10000) {
+    return { emoji: '🍚', label: '만원짜리 한 끼', text: '식당에서 기본 식사 한 번' };
   }
   if (cost <= 12000) {
     return { emoji: '🍱', label: '든든한 밥 한 끼 (1만원대)', text: '따뜻한 점심 식사 가격' };
@@ -321,8 +336,11 @@ export function getRealLifeEquivalence(cost: number): { emoji: string; label: st
   if (cost <= 60000) {
     return { emoji: '🥩', label: '패밀리 레스토랑 외식 (5만원대)', text: '근사한 주말 외식 1회 수준' };
   }
+  if (cost <= 90000) {
+    return { emoji: '🍽️', label: '호텔 뷔페나 고급 외식 (6~9만원대)', text: '조금 특별한 외식 한 번의 가격' };
+  }
   if (cost <= 120000) {
-    return { emoji: '🍣', label: '스시 오마카세 / 콘서트 (10만원대)', text: '특별한 날 즐기는 가치' };
+    return { emoji: '🍣', label: '스시 오마카세 / 콘서트 (9~12만원대)', text: '특별한 날 즐기는 가치' };
   }
   if (cost <= 300000) {
     return { emoji: '✈️', label: '제주도 왕복 항공권 (20~30만원)', text: '주말 제주 힐링 여행 수준' };
@@ -333,8 +351,11 @@ export function getRealLifeEquivalence(cost: number): { emoji: string; label: st
   if (cost <= 800000) {
     return { emoji: '🏨', label: '5성급 럭셔리 호캉스 (70~80만원)', text: '특급 호텔 스위트룸 숙박' };
   }
+  if (cost <= 1000000) {
+    return { emoji: '📱', label: '프리미엄 스마트폰 (80~100만원)', text: '가성비 좋은 스마트폰 한 대 가격' };
+  }
   if (cost <= 1200000) {
-    return { emoji: '📱', label: '최신 플래그십 스마트폰 (100만원대)', text: '최신 아이폰/갤럭시 1대 가격' };
+    return { emoji: '📱', label: '최신 플래그십 스마트폰 (100~120만원)', text: '최신 아이폰/갤럭시 한 대 가격' };
   }
   if (cost <= 1800000) {
     return { emoji: '💻', label: '프리미엄 노트북/맥북 (150만원대)', text: '고성능 업무용 노트북 1대 수준' };
