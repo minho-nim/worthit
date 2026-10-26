@@ -149,6 +149,8 @@ export const ItemFormModal: React.FC<ItemFormModalProps> = ({
   const [usageMethod, setUsageMethod] = useState<UsageMethod>('usage');
   const [usageUnit, setUsageUnit] = useState<UsageUnit>('회');
   const [targetUnitCost, setTargetUnitCost] = useState<string>('5000');
+  const [goalMode, setGoalMode] = useState<'count' | 'cost'>('count');
+  const [goalCount, setGoalCount] = useState('');
 
   // Detailed options (toggleable)
   const [showAdvanced, setShowAdvanced] = useState(false);
@@ -170,6 +172,8 @@ export const ItemFormModal: React.FC<ItemFormModalProps> = ({
       setUsageMethod(editingItem.usageMethod);
       setUsageUnit(editingItem.usageUnit);
       setTargetUnitCost(editingItem.targetUnitCost.toString());
+      setGoalMode('cost');
+      setGoalCount(String(calculateRequiredUsage(editingItem.purchasePrice, editingItem.targetUnitCost, editingItem.usageMethod === 'days' ? '일' : editingItem.usageUnit)));
       const itemRecs = existingRecords.filter((r) => r.itemId === editingItem.id);
       const total = itemRecs.reduce((sum, r) => sum + r.quantity, 0);
       setInitialUsage(total.toString());
@@ -185,6 +189,8 @@ export const ItemFormModal: React.FC<ItemFormModalProps> = ({
       setUsageUnit('회');
       setInitialUsage('0');
       setTargetUnitCost('5000');
+      setGoalMode('count');
+      setGoalCount('');
       setShowAdvanced(false);
       setErrors({});
     }
@@ -204,6 +210,8 @@ export const ItemFormModal: React.FC<ItemFormModalProps> = ({
       setPurchasePrice(tmpl.defaultPrice.toString());
     }
     setTargetUnitCost(tmpl.targetUnitCost.toString());
+    setGoalMode('count');
+    setGoalCount(String(calculateRequiredUsage(Number(purchasePrice) || tmpl.defaultPrice, tmpl.targetUnitCost, tmpl.usageUnit)));
     setErrors({});
   };
 
@@ -212,15 +220,15 @@ export const ItemFormModal: React.FC<ItemFormModalProps> = ({
     const current = Number(purchasePrice) || 0;
     const next = current + amount;
     setPurchasePrice(next.toString());
-    autoRecommendTarget(next, usageMethod, usageUnit);
   };
 
-  // Smart auto-recommend target price when price changes
-  const autoRecommendTarget = (price: number, method: UsageMethod, unit: UsageUnit) => {
-    const suggestion = getTargetRecommendations(price, method, unit, category, billingCycle)
-      .find(option => option.recommended);
-    if (suggestion) setTargetUnitCost(String(suggestion.unitCost));
-  };
+  const priceNum = Math.round(Number(purchasePrice) || 0);
+  const isDays = usageMethod === 'days';
+  const effectiveUnit = isDays ? '일' : usageUnit;
+  const countNum = Number(goalCount);
+  const activeTargetCost = goalMode === 'count'
+    ? (countNum > 0 ? priceNum / countNum : 0)
+    : Number(targetUnitCost);
 
   // Validation
   const validateForm = (): boolean => {
@@ -234,10 +242,12 @@ export const ItemFormModal: React.FC<ItemFormModalProps> = ({
       errs.purchasePrice = '올바른 구매 금액을 입력해 주세요.';
     }
 
-    const targetCostNum = Number(targetUnitCost);
     if (Number(purchasePrice) > 0) {
-      if (!targetUnitCost || isNaN(targetCostNum) || targetCostNum <= 0) {
-        errs.targetUnitCost = '목표 단가는 1원 이상으로 자유롭게 입력해 주세요.';
+      if (goalMode === 'count' && (!Number.isFinite(countNum) || countNum <= 0
+        || (effectiveUnit === '시간' ? !Number.isSafeInteger(countNum * 2) : !Number.isSafeInteger(countNum)))) {
+        errs.goalCount = effectiveUnit === '시간' ? '목표 사용 시간을 0.5시간 단위로 입력해 주세요.' : '목표 사용량을 1 이상의 정수로 입력해 주세요.';
+      } else if (!Number.isFinite(activeTargetCost) || activeTargetCost <= 0) {
+        errs.targetUnitCost = '나에게 맞는 목표 단가를 입력해 주세요.';
       }
     }
 
@@ -256,7 +266,7 @@ export const ItemFormModal: React.FC<ItemFormModalProps> = ({
     if (!validateForm()) return;
 
     const price = Math.round(Number(purchasePrice) || 0);
-    const targetCost = Math.max(1, Math.round(Number(targetUnitCost) || 1));
+    const targetCost = activeTargetCost;
     const initUsage = Number(initialUsage) || 0;
 
     const itemData: Omit<WorthItem, 'id' | 'createdAt' | 'updatedAt'> = {
@@ -276,12 +286,9 @@ export const ItemFormModal: React.FC<ItemFormModalProps> = ({
     onClose();
   };
 
-  // Live calculations for quick preview
-  const priceNum = Number(purchasePrice) || 0;
-  const targetCostNum = Math.max(1, Number(targetUnitCost) || 1);
-  const isDays = usageMethod === 'days';
-  const effectiveUnit = isDays ? '일' : usageUnit;
-  const requiredCount = calculateRequiredUsage(priceNum, targetCostNum, effectiveUnit);
+  // Preserve the chosen usage count; only the displayed cost is rounded.
+  const targetCostNum = activeTargetCost || 0;
+  const requiredCount = activeTargetCost > 0 ? calculateRequiredUsage(priceNum, activeTargetCost, effectiveUnit) : 0;
   const targetRecommendations = getTargetRecommendations(priceNum, usageMethod, usageUnit, category, billingCycle);
 
   return (
@@ -298,7 +305,7 @@ export const ItemFormModal: React.FC<ItemFormModalProps> = ({
                 {editingItem ? '소비 정보 수정' : '간편 소비 등록'}
               </h2>
               <p className="text-xs text-slate-500">
-                {editingItem ? '내용을 수정하고 저장하세요' : '이름과 금액만 넣으면 본전 계산 준비 완료!'}
+                {editingItem ? '내용을 수정하고 저장하세요' : '내가 만족할 사용 목표를 정해보세요'}
               </p>
             </div>
           </div>
@@ -382,10 +389,6 @@ export const ItemFormModal: React.FC<ItemFormModalProps> = ({
                 setPurchasePrice(e.target.value);
                 if (errors.purchasePrice)
                   setErrors((prev) => ({ ...prev, purchasePrice: '' }));
-                const num = Number(e.target.value);
-                if (num > 0) {
-                  autoRecommendTarget(num, usageMethod, usageUnit);
-                }
               }}
               className={`w-full px-3.5 py-2.5 rounded-xl border text-sm text-slate-900 focus:outline-none transition-all ${
                 errors.purchasePrice
@@ -416,14 +419,13 @@ export const ItemFormModal: React.FC<ItemFormModalProps> = ({
           {/* 4. How to use (Super Simple A/B choices) */}
           <div>
             <label className="block text-xs font-bold text-slate-800 mb-1.5">
-              어떻게 본전을 뽑을까요?
+              어떻게 사용을 기록할까요?
             </label>
             <div className="grid grid-cols-2 gap-2">
               <button
                 type="button"
                 onClick={() => {
                   setUsageMethod('usage');
-                  autoRecommendTarget(Number(purchasePrice) || 0, 'usage', usageUnit);
                 }}
                 className={`p-3 rounded-xl border text-left transition-all ${
                   usageMethod === 'usage'
@@ -448,7 +450,6 @@ export const ItemFormModal: React.FC<ItemFormModalProps> = ({
                 type="button"
                 onClick={() => {
                   setUsageMethod('days');
-                  autoRecommendTarget(Number(purchasePrice) || 0, 'days', '일');
                 }}
                 className={`p-3 rounded-xl border text-left transition-all ${
                   usageMethod === 'days'
@@ -473,6 +474,33 @@ export const ItemFormModal: React.FC<ItemFormModalProps> = ({
 
           {/* 5. Target Unit Cost & Goal Presets */}
           <div>
+            <p className="text-sm font-bold text-slate-900 mb-1">
+              {isDays ? '얼마나 오래 쓰면 돈이 아깝지 않을까요?' : effectiveUnit === '시간' ? '몇 시간 정도 쓰면 돈이 아깝지 않을까요?' : `몇 ${effectiveUnit === '회' ? '번' : effectiveUnit} 정도 쓰면 돈이 아깝지 않을까요?`}
+            </p>
+            <p className="text-xs text-slate-500 mb-3">본전의 기준은 사람마다 달라요. 내가 만족할 기준을 정하고 언제든 바꿀 수 있어요.</p>
+            <div className="flex gap-2 mb-3">
+              {(['count', 'cost'] as const).map(mode => <button type="button" key={mode}
+                aria-pressed={goalMode === mode}
+                onClick={() => {
+                  if (mode === 'cost' && goalMode === 'count' && activeTargetCost > 0) setTargetUnitCost(String(activeTargetCost));
+                  if (mode === 'count' && goalMode === 'cost' && activeTargetCost > 0) setGoalCount(String(calculateRequiredUsage(priceNum, activeTargetCost, effectiveUnit)));
+                  setGoalMode(mode); setErrors(prev => ({ ...prev, goalCount: '', targetUnitCost: '' }));
+                }} className={`px-3 py-2 text-xs font-bold rounded-xl border ${goalMode === mode ? 'bg-emerald-50 border-emerald-500 text-emerald-900' : 'border-slate-200 text-slate-500'}`}>
+                {mode === 'count' ? `${isDays ? '기간' : '사용량'}으로 정하기` : '단가로 직접 정하기'}
+              </button>)}
+            </div>
+            {goalMode === 'count' ? <div>
+              <label htmlFor="goal-count" className="block text-xs font-bold text-slate-800 mb-1">내 사용 목표 ({effectiveUnit})</label>
+              <input id="goal-count" type="text" inputMode={effectiveUnit === '시간' ? 'decimal' : 'numeric'}
+                value={goalCount} placeholder={isDays ? '예: 365' : effectiveUnit === '시간' ? '예: 20' : '예: 60'}
+                onChange={event => {
+                  if (!/^\d*\.?\d*$/.test(event.target.value)) return;
+                  setGoalCount(event.target.value); setErrors(prev => ({ ...prev, goalCount: '' }));
+                }} className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:border-emerald-600" />
+              {errors.goalCount && <p className="text-xs text-rose-500 mt-1">{errors.goalCount}</p>}
+              {activeTargetCost > 0 && <p className="text-xs text-emerald-800 mt-2">자동 계산한 목표 단가: 약 {formatKRW(activeTargetCost)}/{effectiveUnit}</p>}
+              {isDays && <p className="text-[11px] text-slate-500 mt-1">구매일부터 지난 날짜로 계산해요. 실제 사용 여부를 확인하는 방식은 아니에요.</p>}
+            </div> : <>
             <div className="flex items-center justify-between mb-1">
               <label htmlFor="target-unit-cost" className="text-xs font-bold text-slate-800">
                 목표 사용단가 ({isDays ? '원/일' : `원/${usageUnit}`})
@@ -486,12 +514,11 @@ export const ItemFormModal: React.FC<ItemFormModalProps> = ({
               <input
                 id="target-unit-cost"
                 type="text"
-                inputMode="numeric"
-                pattern="[0-9]*"
+                inputMode="decimal"
                 placeholder="자유롭게 입력 (예: 500, 1000, 2500...)"
                 value={targetUnitCost}
                 onChange={(e) => {
-                  if (!/^\d*$/.test(e.target.value)) return;
+                  if (!/^\d*\.?\d*$/.test(e.target.value)) return;
                   setTargetUnitCost(e.target.value);
                   if (errors.targetUnitCost)
                     setErrors((prev) => ({ ...prev, targetUnitCost: '' }));
@@ -508,8 +535,9 @@ export const ItemFormModal: React.FC<ItemFormModalProps> = ({
               <p className="text-xs text-rose-500 mt-1">{errors.targetUnitCost}</p>
             )}
 
+            </>}
             <div className="mt-3 p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
-              <p className="text-xs font-semibold text-slate-800">목표 단가, 이렇게 정해보세요</p>
+              <p className="text-xs font-semibold text-slate-800">이 정도로 시작해 볼까요?</p>
               <p className="text-xs text-slate-500 leading-relaxed">
                 {category === 'subscription'
                   ? '한 결제기간 동안 실제로 쓸 횟수나 시간을 골라보세요. 결제금액을 예상 사용량으로 나누어 계산해요.'
@@ -520,31 +548,30 @@ export const ItemFormModal: React.FC<ItemFormModalProps> = ({
                   <button
                     type="button"
                     key={option.count}
-                    onClick={() => { setTargetUnitCost(String(option.unitCost)); setErrors(prev => ({ ...prev, targetUnitCost: '' })); }}
-                    className={`p-2.5 text-left text-xs rounded-lg border transition-colors ${Number(targetUnitCost) === option.unitCost ? 'bg-emerald-50 border-emerald-500 text-emerald-900' : 'bg-white border-slate-200 text-slate-600 hover:border-emerald-400'}`}
+                    onClick={() => { setGoalCount(String(option.count)); setTargetUnitCost(String(option.unitCost)); setErrors(prev => ({ ...prev, targetUnitCost: '', goalCount: '' })); }}
+                    className={`p-2.5 text-left text-xs rounded-lg border transition-colors ${(goalMode === 'count' ? countNum === option.count : Number(targetUnitCost) === option.unitCost) ? 'bg-emerald-50 border-emerald-500 text-emerald-900' : 'bg-white border-slate-200 text-slate-600 hover:border-emerald-400'}`}
                   >
-                    <span className="block">{option.label}{option.recommended && ' · 추천'}</span>
-                    <strong className="block mt-1">{formatKRW(option.unitCost)}/{effectiveUnit}</strong>
+                    <span className="block">{option.label}</span>
+                    <strong className="block mt-1">약 {formatKRW(goalMode === 'count' ? priceNum / option.count : option.unitCost)}/{effectiveUnit}</strong>
                   </button>
                 ))}
               </div> : <p className="text-xs text-slate-400">구매금액을 입력하면 추천 금액이 표시돼요.</p>}
-              <p className="text-[11px] text-slate-500">추천은 설정 예시예요. 내 사용 계획에 맞춰 직접 바꿀 수 있어요. 계산 금액은 1원 단위로 올림해요.</p>
+              <p className="text-[11px] text-slate-500">정답이 아닌 시작 예시예요. 내 사용 계획에 맞춰 바꿔보세요. 금액은 반올림해 표시하며, 사용량 목표는 입력한 값을 유지해요.</p>
             </div>
           </div>
 
           {/* 6. Live Result Preview Box */}
-          <div className="p-3.5 rounded-2xl bg-emerald-50/60 border border-emerald-200/80 space-y-1">
+          {activeTargetCost > 0 && <div className="p-3.5 rounded-2xl bg-emerald-50/60 border border-emerald-200/80 space-y-1">
             <div className="flex items-center justify-between text-xs font-bold text-emerald-900">
-              <span>💡 본전 목표 계산 결과</span>
+              <span>💡 내가 정한 사용 목표</span>
               <span>총 {requiredCount}{effectiveUnit} 필요</span>
             </div>
             <p className="text-xs text-emerald-800 leading-relaxed">
               <strong>{formatKRW(priceNum)}</strong>에 구매하여, 총{' '}
               <strong>{requiredCount}{effectiveUnit}</strong>을 사용하면 목표 단가(
-              <strong>{formatKRW(targetCostNum)}/{effectiveUnit}</strong>)에 도달해 본전을
-              뽑게 됩니다!
+              <strong>약 {formatKRW(targetCostNum)}/{effectiveUnit}</strong>)에 도달해요. 내가 정한 만족 기준이에요.
             </p>
-          </div>
+          </div>}
 
           {/* 7. Advanced options toggle */}
           <div className="pt-1 border-t border-slate-100">

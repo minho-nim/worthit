@@ -47,7 +47,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
             <div>
               <p className="text-sm font-semibold text-slate-900">구매한 소비 등록</p>
               <p className="text-xs text-slate-500 mt-0.5">
-                물건, 회원권, 구독 서비스의 가격과 원하는 목표 사용단가를 정해요.
+                물건, 회원권, 구독 서비스의 가격과 내가 만족할 사용 목표를 정해요.
               </p>
             </div>
           </div>
@@ -69,9 +69,9 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
               3
             </div>
             <div>
-              <p className="text-sm font-semibold text-slate-900">낮아지는 단가와 본전 달성</p>
+              <p className="text-sm font-semibold text-slate-900">낮아지는 단가와 내 목표 달성</p>
               <p className="text-xs text-slate-500 mt-0.5">
-                쓸 때마다 회당 단가가 뚝뚝 떨어지며 목표를 달성하는 성취감을 느껴보세요!
+                쓸 때마다 회당 단가가 뚝뚝 떨어지며 내가 정한 목표를 달성하는 성취감을 느껴보세요!
               </p>
             </div>
           </div>

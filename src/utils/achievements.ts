@@ -68,7 +68,7 @@ export function calculateAchievements(
     {
       id: 'first_goal',
       title: '첫 본전 달성',
-      description: '목표한 사용단가에 도달하여 본전을 뽑았어요!',
+      description: '내가 정한 목표 사용단가에 처음 도달했어요!',
       iconName: 'Crown',
       isUnlocked: achievedItemsCount >= 1,
       progressText: `${Math.min(achievedItemsCount, 1)} / 1개`,

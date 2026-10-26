@@ -234,7 +234,7 @@ export const ItemDetailModal: React.FC<ItemDetailModalProps> = ({
                 <span className="text-sm font-bold text-slate-900">목표 달성률</span>
                 {isGoalAchieved && (
                   <span className="text-[11px] font-semibold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full flex items-center gap-1">
-                    <CheckCircle2 className="w-3 h-3" /> 본전 달성!
+                    <CheckCircle2 className="w-3 h-3" /> 내 목표 달성!
                   </span>
                 )}
               </div>

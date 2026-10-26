@@ -171,7 +171,7 @@ export const AnalyticsView: React.FC<AnalyticsViewProps> = ({
       <div>
         <h2 className="text-xl font-bold text-slate-900">소비 가치 분석</h2>
         <p className="text-xs text-slate-500 mt-0.5">
-          등록한 소비의 종합 평균 본전 지수와 카테고리별 활용도를 한눈에 파악해요.
+          등록한 소비의 내 목표 대비 평균 진행률와 카테고리별 활용도를 한눈에 파악해요.
         </p>
       </div>
 
@@ -181,7 +181,7 @@ export const AnalyticsView: React.FC<AnalyticsViewProps> = ({
           <div className="space-y-1.5">
             <div className="flex items-center gap-2">
               <span className="text-xs font-semibold text-slate-500 tracking-tight">
-                내 소비 종합 본전 현황
+                내 소비의 목표 진행 현황
               </span>
               <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-lg">
                 {overallScore.grade}
@@ -243,7 +243,7 @@ export const AnalyticsView: React.FC<AnalyticsViewProps> = ({
         </div>
 
         <div className="p-4 rounded-2xl bg-white border border-slate-200/90 shadow-sm">
-          <span className="text-xs text-slate-500 font-medium">본전 달성 완료</span>
+          <span className="text-xs text-slate-500 font-medium">내 목표 달성 완료</span>
           <p className="text-xl font-bold text-emerald-600 mt-1">
             {itemStats.filter((s) => s.isGoalAchieved).length}개
           </p>
@@ -254,7 +254,7 @@ export const AnalyticsView: React.FC<AnalyticsViewProps> = ({
                   (itemStats.filter((s) => s.isGoalAchieved).length / items.length) * 100
                 )
               : 0}
-            % 본전 도달
+            % 목표 도달
           </span>
         </div>
 
@@ -267,13 +267,13 @@ export const AnalyticsView: React.FC<AnalyticsViewProps> = ({
         </div>
       </div>
 
-      {/* 3. Category Average Break-Even Section ("카테고리별 평균 본전 & 활용도") */}
+      {/* 3. Category Average Break-Even Section ("카테고리별 목표 진행률 & 활용도") */}
       {categoryWorth.length > 0 && (
         <section className="p-5 sm:p-6 rounded-3xl bg-white border border-slate-200/90 shadow-sm space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
             <div>
               <h3 className="font-bold text-base text-slate-900 flex items-center gap-2">
-                <span>카테고리별 평균 본전 & 활용도</span>
+                <span>카테고리별 목표 진행률 & 활용도</span>
                 <span className="text-[11px] px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 font-semibold">
                   분야별 분석
                 </span>
@@ -335,7 +335,7 @@ export const AnalyticsView: React.FC<AnalyticsViewProps> = ({
                   </div>
                   <div className="flex justify-between items-center text-[10px] text-slate-400">
                     <span>달성 완료 {cat.achievedCount}개</span>
-                    <span>평균 본전 달성률</span>
+                    <span>평균 목표 달성률</span>
                   </div>
                 </div>
               </div>
@@ -527,7 +527,7 @@ export const AnalyticsView: React.FC<AnalyticsViewProps> = ({
                     <p className="font-bold text-slate-800 truncate">{st.item.name}</p>
                     <p className="text-slate-500 text-[11px] mt-0.5">
                       남은 {st.remainingUsage}
-                      {st.item.usageMethod === 'days' ? '일' : st.item.usageUnit} 사용 시 본전!
+                      {st.item.usageMethod === 'days' ? '일' : st.item.usageUnit} 사용 시 내 목표 달성!
                     </p>
                   </div>
                   <span className="font-bold text-slate-700">{st.progress}%</span>
@@ -545,7 +545,7 @@ export const AnalyticsView: React.FC<AnalyticsViewProps> = ({
               </span>
               <p className="text-xs text-slate-500">
                 <strong>{inactiveItems[0].item.name}</strong> 등 최근 기록이 뜸한 소비가 있어요.
-                한 번 더 사용하고 본전 달성률을 끌어올려 보세요!
+                한 번 더 사용하고 내 목표 달성률을 끌어올려 보세요!
               </p>
             </div>
           )}

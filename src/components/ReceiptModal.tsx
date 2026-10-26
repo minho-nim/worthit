@@ -64,7 +64,7 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({
     setMessage('');
     setExportError('');
     const filename = receiptFilename(item.name, getTodayDateString());
-    const text = `🧾 [WorthIt 본전 영수증]\n항목: ${item.name}\n구매가: ${formatKRW(item.purchasePrice)}\n현재 사용단가: ${stats.unitCostFormatted}\n목표 단가: ${stats.targetCostFormatted}\n달성률: ${progress}%\n현실 체감 가치: ${equivalence.emoji} ${equivalence.label} (${equivalence.text})\n상태: ${isGoalAchieved ? '🎉 본전 달성 완료!' : '꾸준히 가치 창출 중!'}\n\n#WorthIt #본전뽑기 #가치소비`;
+    const text = `🧾 [WorthIt 본전 영수증]\n항목: ${item.name}\n구매가: ${formatKRW(item.purchasePrice)}\n현재 사용단가: ${stats.unitCostFormatted}\n목표 단가: ${stats.targetCostFormatted}\n달성률: ${progress}%\n현실 체감 가치: ${equivalence.emoji} ${equivalence.label} (${equivalence.text})\n상태: ${isGoalAchieved ? '🎉 내가 정한 목표 달성!' : '내 목표를 향해 사용 중!'}\n\n#WorthIt #본전뽑기 #가치소비`;
     try {
       if (action === 'image') {
         if (!navigator.clipboard?.write || typeof ClipboardItem === 'undefined'
@@ -166,7 +166,7 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({
               </span>
             </div>
             <div className="flex justify-between items-center text-[11px] text-slate-500">
-              <span className="font-sans">목표 설정 단가</span>
+              <span className="font-sans">내가 정한 목표 단가</span>
               <span>{formatKRW(item.targetUnitCost)}/{unit}</span>
             </div>
             <div className="flex justify-between items-center text-[11px]">
@@ -189,7 +189,7 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({
           <div className="py-2 flex justify-center">
             {isGoalAchieved ? (
               <div className="border-2 border-emerald-600 text-emerald-700 font-sans font-black tracking-widest px-4 py-1.5 rounded-lg -rotate-3 uppercase text-xs shadow-xs">
-                ★ 본전 달성 완료 (PAID OFF) ★
+                ★ 내 목표 달성 완료 (GOAL MET) ★
               </div>
             ) : (
               <div className="border-2 border-amber-500 text-amber-700 font-sans font-black tracking-wider px-3.5 py-1 rounded-lg rotate-2 text-[11px]">

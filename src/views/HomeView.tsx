@@ -75,13 +75,13 @@ export const HomeView: React.FC<HomeViewProps> = ({
             내 소비, 얼마나 잘 쓰고 있을까?
           </h2>
           <p className="text-sm text-slate-600 leading-relaxed max-w-sm mx-auto">
-            구매한 물건이나 구독 서비스를 등록하고 실제 사용단가와 본전 달성률을 확인해 보세요.
+            구매한 물건이나 구독 서비스를 등록하고 실제 사용단가와 내 목표 달성률을 확인해 보세요.
           </p>
         </div>
 
         <div className="p-5 rounded-3xl bg-white border border-slate-200/90 shadow-xs text-left space-y-3.5">
           <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">
-            WorthIt 3단계 본전 찾기
+            WorthIt 3단계 내 사용 목표 찾기
           </p>
           <div className="flex items-center gap-3">
             <span className="w-6 h-6 rounded-full bg-emerald-100 text-emerald-800 text-xs font-bold flex items-center justify-center shrink-0">
@@ -104,7 +104,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
               3
             </span>
             <p className="text-xs text-slate-700">
-              <strong>낮아지는 단가 확인:</strong> 목표 도달 시 본전 달성 업적 획득!
+              <strong>낮아지는 단가 확인:</strong> 내가 정한 목표에 얼마나 가까워졌는지 확인해요.
             </p>
           </div>
         </div>

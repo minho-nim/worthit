@@ -82,9 +82,9 @@ export function calculateRequiredUsage(
   const raw = purchasePrice / targetUnitCost;
   if (unit === '시간') {
     // 0.5 hour step ceiling
-    return Math.ceil(raw * 2) / 2;
+    return Math.ceil(raw * 2 - Number.EPSILON * Math.max(1, raw * 2) * 4) / 2;
   }
-  return Math.ceil(raw);
+  return Math.ceil(raw - Number.EPSILON * Math.max(1, raw) * 4);
 }
 
 /**
@@ -172,11 +172,11 @@ export function calculateItemStats(
 
   // Status message & tier
   let tier: ItemStats['tier'] = 'tier1';
-  let statusMessage = '조금씩 본전을 향해 가고 있어요.';
+  let statusMessage = '내가 정한 목표를 향해 사용하고 있어요.';
 
   if (isGoalAchieved || progress >= 100) {
     tier = 'achieved';
-    statusMessage = '목표 사용단가를 달성했어요! 🎉';
+    statusMessage = '내가 정한 목표에 도달했어요! 🎉';
   } else if (progress >= 75) {
     tier = 'tier4';
     statusMessage = '목표까지 얼마 남지 않았어요!';
@@ -188,7 +188,7 @@ export function calculateItemStats(
     statusMessage = '꾸준히 잘 활용하고 있어요!';
   } else {
     tier = 'tier1';
-    statusMessage = '조금씩 본전을 향해 가고 있어요.';
+    statusMessage = '내가 정한 목표를 향해 사용하고 있어요.';
   }
 
   const unitSuffix = isDays ? '/일' : `/${item.usageUnit}`;
@@ -445,7 +445,7 @@ export function calculateOverallWorthScore(itemStats: ItemStats[]): OverallWorth
       grade: '시작 전',
       gradeBadge: '소비 등록 필요',
       emoji: '🌱',
-      comment: '첫 소비를 등록하고 본전 찾기 여정을 시작해 보세요!',
+      comment: '첫 소비를 등록하고 나만의 사용 목표를 정해보세요!',
       totalSpent: 0,
       achievedCount: 0,
       totalCount: 0,
@@ -473,7 +473,7 @@ export function calculateOverallWorthScore(itemStats: ItemStats[]): OverallWorth
   let grade = '초기 단계';
   let gradeBadge = '시작';
   let emoji = '🌱';
-  let comment = '자주 사용하면서 본전을 차근차근 채워보세요.';
+  let comment = '나에게 맞는 사용 목표를 차근차근 채워보세요.';
 
   if (averageProgress >= 100) {
     grade = '목표 달성 완료';
@@ -481,7 +481,7 @@ export function calculateOverallWorthScore(itemStats: ItemStats[]): OverallWorth
     emoji = '✓';
     comment = '등록한 소비들의 목표 단가에 모두 도달했어요.';
   } else if (averageProgress >= 75) {
-    grade = '본전 도달 임박';
+    grade = '내 목표 도달 임박';
     gradeBadge = '75% 이상';
     emoji = '🎯';
     comment = '설정한 사용 목표에 가까워졌어요.';
@@ -561,7 +561,7 @@ export function calculateCategoryWorthStats(itemStats: ItemStats[]): CategoryWor
       const achievedCount = statsList.filter((s) => s.isGoalAchieved).length;
 
       let statusBadge = '시작 단계';
-      if (averageProgress >= 100) statusBadge = '본전 달성';
+      if (averageProgress >= 100) statusBadge = '내 목표 달성';
       else if (averageProgress >= 80) statusBadge = '목표 임박';
       else if (averageProgress >= 50) statusBadge = '절반 돌파';
       else if (averageProgress >= 25) statusBadge = '활용 중';
