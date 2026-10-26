@@ -23,7 +23,7 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({
   const { item, progress, isGoalAchieved, currentUnitCost, totalUsage, daysOwned } = stats;
   const isDays = item.usageMethod === 'days';
   const unit = isDays ? '일' : item.usageUnit;
-  const equivalence = getRealLifeEquivalence(currentUnitCost || item.purchasePrice);
+  const equivalence = getRealLifeEquivalence(currentUnitCost ?? item.purchasePrice);
 
   const handleCopySummary = () => {
     const text = `🧾 [WorthIt 본전 영수증]\n항목: ${item.name}\n구매가: ${formatKRW(item.purchasePrice)}\n현재 사용단가: ${stats.unitCostFormatted}\n목표 단가: ${stats.targetCostFormatted}\n달성률: ${progress}%\n현실 체감 가치: ${equivalence.emoji} ${equivalence.label} (${equivalence.text})\n상태: ${isGoalAchieved ? '🎉 본전 달성 완료!' : '꾸준히 가치 창출 중!'}\n\n#WorthIt #본전뽑기 #가치소비`;

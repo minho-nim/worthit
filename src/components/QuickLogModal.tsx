@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { X, Plus, Calendar, FileText } from 'lucide-react';
 import { WorthItem, UsageRecord } from '../types';
 import { getTodayDateString } from '../utils/calculator';
@@ -20,8 +20,6 @@ export const QuickLogModal: React.FC<QuickLogModalProps> = ({
   editingRecord,
   onUpdateRecord,
 }) => {
-  if (!isOpen || !item) return null;
-
   const [quantity, setQuantity] = useState<string>(
     editingRecord ? editingRecord.quantity.toString() : '1'
   );
@@ -31,6 +29,16 @@ export const QuickLogModal: React.FC<QuickLogModalProps> = ({
   const [note, setNote] = useState<string>(editingRecord?.note || '');
   const [error, setError] = useState<string>('');
 
+  useEffect(() => {
+    if (!isOpen) return;
+    setQuantity(editingRecord ? editingRecord.quantity.toString() : '1');
+    setUsedAt(editingRecord ? editingRecord.usedAt : getTodayDateString());
+    setNote(editingRecord?.note || '');
+    setError('');
+  }, [isOpen, item?.id, editingRecord]);
+
+  if (!isOpen || !item) return null;
+
   const todayStr = getTodayDateString();
   const unit = item.usageUnit;
 
@@ -38,7 +46,7 @@ export const QuickLogModal: React.FC<QuickLogModalProps> = ({
     e.preventDefault();
     const qty = Number(quantity);
 
-    if (isNaN(qty) || qty <= 0) {
+    if (!Number.isFinite(qty) || qty <= 0) {
       setError('0보다 큰 숫자를 입력해 주세요.');
       return;
     }

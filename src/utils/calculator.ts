@@ -216,25 +216,26 @@ export function calculateItemStats(
 export function calculateCostReductionDelta(
   item: WorthItem,
   currentUsage: number,
-  additionalQuantity: number
+  additionalQuantity: number,
+  totalSpent: number = item.purchasePrice
 ): { previousCost: number; newCost: number; delta: number } | null {
   if (item.usageMethod === 'days' || additionalQuantity <= 0) return null;
-  if (item.purchasePrice <= 0) return null;
+  if (totalSpent <= 0) return null;
 
   const currentTotal = currentUsage;
   const newTotal = currentTotal + additionalQuantity;
 
   if (currentTotal === 0) {
-    const newCost = item.purchasePrice / newTotal;
+    const newCost = totalSpent / newTotal;
     return {
-      previousCost: item.purchasePrice,
+      previousCost: totalSpent,
       newCost,
-      delta: item.purchasePrice - newCost,
+      delta: totalSpent - newCost,
     };
   }
 
-  const previousCost = item.purchasePrice / currentTotal;
-  const newCost = item.purchasePrice / newTotal;
+  const previousCost = totalSpent / currentTotal;
+  const newCost = totalSpent / newTotal;
   const delta = Math.max(0, previousCost - newCost);
 
   return {
@@ -406,15 +407,16 @@ export function getRealLifeEquivalence(cost: number): { emoji: string; label: st
 export function simulateNextUses(
   item: WorthItem,
   currentUsage: number,
-  additionalSteps: number[] = [1, 3, 5, 10]
+  additionalSteps: number[] = [1, 3, 5, 10],
+  totalSpent: number = item.purchasePrice
 ): { additional: number; totalCount: number; cost: number; reduction: number }[] {
-  if (item.usageMethod === 'days' || item.purchasePrice <= 0) return [];
+  if (item.usageMethod === 'days' || totalSpent <= 0) return [];
 
-  const currentCost = currentUsage > 0 ? item.purchasePrice / currentUsage : item.purchasePrice;
+  const currentCost = currentUsage > 0 ? totalSpent / currentUsage : totalSpent;
 
   return additionalSteps.map((add) => {
     const totalCount = currentUsage + add;
-    const cost = Math.round(item.purchasePrice / totalCount);
+    const cost = Math.round(totalSpent / totalCount);
     const reduction = Math.max(0, Math.round(currentCost - cost));
     return {
       additional: add,

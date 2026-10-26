@@ -69,6 +69,7 @@ export const ItemDetailModal: React.FC<ItemDetailModalProps> = ({
   const [periodStart, setPeriodStart] = useState('');
   const [periodEnd, setPeriodEnd] = useState('');
   const [periodAmount, setPeriodAmount] = useState(stats.item.purchasePrice.toString());
+  const [periodError, setPeriodError] = useState('');
 
   if (!isOpen) return null;
 
@@ -95,18 +96,24 @@ export const ItemDetailModal: React.FC<ItemDetailModalProps> = ({
     ? getRealLifeEquivalence(stats.currentUnitCost)
     : null;
 
-  const simulations = simulateNextUses(item, totalUsage, [1, 3, 5, 10]);
+  const simulations = simulateNextUses(item, totalUsage, [1, 3, 5, 10], stats.totalSpent);
 
   const handlePeriodSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!periodStart || !periodEnd) return;
+    const amount = Number(periodAmount);
+    if (periodEnd < periodStart || !Number.isFinite(amount) || amount < 0) {
+      setPeriodError('종료일은 시작일 이후로, 결제 금액은 0원 이상으로 입력해 주세요.');
+      return;
+    }
     onAddBillingPeriod({
       periodStart,
       periodEnd,
-      amount: Math.round(Number(periodAmount) || 0),
+      amount: Math.round(amount),
       status: 'paid',
     });
     setShowAddPeriod(false);
+    setPeriodError('');
   };
 
   return (
@@ -426,10 +433,12 @@ export const ItemDetailModal: React.FC<ItemDetailModalProps> = ({
                       type="number"
                       value={periodAmount}
                       onChange={(e) => setPeriodAmount(e.target.value)}
+                      min="0"
                       required
                       className="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white"
                     />
                   </div>
+                  {periodError && <p className="text-xs text-rose-600" role="alert">{periodError}</p>}
                   <div className="flex justify-end gap-2 pt-1">
                     <button
                       type="button"

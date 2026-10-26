@@ -233,7 +233,7 @@ export default function App() {
 
     const currentStats = calculateItemStats(item, records, billingPeriods);
     const wasGoalAchieved = currentStats.isGoalAchieved;
-    const deltaInfo = calculateCostReductionDelta(item, currentStats.totalUsage, 1);
+    const deltaInfo = calculateCostReductionDelta(item, currentStats.totalUsage, 1, currentStats.totalSpent);
 
     const nowIso = new Date().toISOString();
     const newRecord: UsageRecord = {
@@ -325,7 +325,7 @@ export default function App() {
 
     const currentStats = calculateItemStats(parentItem, records, billingPeriods);
     const wasGoalAchieved = currentStats.isGoalAchieved;
-    const deltaInfo = calculateCostReductionDelta(parentItem, currentStats.totalUsage, quantity);
+    const deltaInfo = calculateCostReductionDelta(parentItem, currentStats.totalUsage, quantity, currentStats.totalSpent);
 
     const nowIso = new Date().toISOString();
     const newRecord: UsageRecord = {

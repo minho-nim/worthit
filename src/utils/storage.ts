@@ -120,6 +120,44 @@ export function exportBackupData(): string {
   return JSON.stringify(data, null, 2);
 }
 
+const isObject = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null && !Array.isArray(value);
+const isText = (value: unknown): value is string => typeof value === 'string' && value.trim().length > 0;
+const isAmount = (value: unknown): value is number =>
+  typeof value === 'number' && Number.isFinite(value) && value >= 0;
+const isDate = (value: unknown): value is string => {
+  if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+  const date = new Date(value + 'T00:00:00Z');
+  return Number.isFinite(date.getTime()) && date.toISOString().slice(0, 10) === value;
+};
+
+function isBackupItem(value: unknown): value is WorthItem {
+  return isObject(value) && isText(value.id) && isText(value.name)
+    && ['item', 'subscription', 'membership', 'other'].includes(String(value.category))
+    && isAmount(value.purchasePrice) && isDate(value.purchaseDate)
+    && ['days', 'usage'].includes(String(value.usageMethod))
+    && ['회', '시간', '개', '일'].includes(String(value.usageUnit))
+    && isAmount(value.targetUnitCost) && (value.purchasePrice === 0 || value.targetUnitCost > 0)
+    && ['active', 'completed', 'archived'].includes(String(value.status))
+    && isText(value.createdAt) && isText(value.updatedAt)
+    && (value.billingCycle === undefined || ['monthly', 'yearly'].includes(String(value.billingCycle)))
+    && (value.expirationDate === undefined || isDate(value.expirationDate));
+}
+
+function isBackupRecord(value: unknown): value is UsageRecord {
+  return isObject(value) && isText(value.id) && isText(value.itemId)
+    && isDate(value.usedAt) && isAmount(value.quantity) && value.quantity > 0
+    && isText(value.createdAt) && (value.note === undefined || typeof value.note === 'string');
+}
+
+function isBackupPeriod(value: unknown): value is BillingPeriod {
+  return isObject(value) && isText(value.id) && isText(value.itemId)
+    && isDate(value.periodStart) && isDate(value.periodEnd) && value.periodStart <= value.periodEnd
+    && isAmount(value.amount) && ['paid', 'pending'].includes(String(value.status));
+}
+
+const hasUniqueIds = (entries: { id: string }[]) => new Set(entries.map(entry => entry.id)).size === entries.length;
+
 export function validateAndParseBackup(jsonString: string): {
   success: boolean;
   data?: BackupData;
@@ -134,6 +172,21 @@ export function validateAndParseBackup(jsonString: string): {
     if (!Array.isArray(parsed.items) || !Array.isArray(parsed.usageRecords)) {
       return { success: false, error: 'WorthIt 데이터 백업 형식이 올바르지 않습니다.' };
     }
+    const periods = parsed.billingPeriods ?? [];
+    if (!parsed.items.every(isBackupItem) || !parsed.usageRecords.every(isBackupRecord)
+      || !Array.isArray(periods) || !periods.every(isBackupPeriod)) {
+      return { success: false, error: '백업 항목의 금액·날짜·사용량 또는 필수 정보가 올바르지 않습니다.' };
+    }
+    const itemIds = new Set(parsed.items.map((item: WorthItem) => item.id));
+    if (!hasUniqueIds(parsed.items) || !hasUniqueIds(parsed.usageRecords) || !hasUniqueIds(periods)
+      || parsed.usageRecords.some((record: UsageRecord) => !itemIds.has(record.itemId))
+      || periods.some((period: BillingPeriod) => !itemIds.has(period.itemId))) {
+      return { success: false, error: '백업에 중복 ID 또는 존재하지 않는 소비의 기록이 포함되어 있습니다.' };
+    }
+    if (parsed.settings !== undefined && (!isObject(parsed.settings)
+      || typeof parsed.settings.hasCompletedOnboarding !== 'boolean' || !isText(parsed.settings.version))) {
+      return { success: false, error: '백업의 앱 설정 형식이 올바르지 않습니다.' };
+    }
     return {
       success: true,
       data: {
@@ -141,7 +194,7 @@ export function validateAndParseBackup(jsonString: string): {
         exportedAt: parsed.exportedAt || new Date().toISOString(),
         items: parsed.items,
         usageRecords: parsed.usageRecords,
-        billingPeriods: Array.isArray(parsed.billingPeriods) ? parsed.billingPeriods : [],
+        billingPeriods: periods,
         settings: parsed.settings || DEFAULT_SETTINGS,
       },
       summary: {
