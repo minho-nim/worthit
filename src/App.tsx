@@ -9,8 +9,9 @@ import {
   saveBillingPeriods,
   loadSettings,
   saveSettings,
-  getSampleDemoData,
-  restoreBackupData,
+  isDemoMode,
+  demoPageUrl,
+  personalPageUrl,
 } from './utils/storage';
 import {
   calculateItemStats,
@@ -20,6 +21,7 @@ import {
   formatKRW,
 } from './utils/calculator';
 import { calculateAchievements } from './utils/achievements';
+import { AppInstall } from './components/AppInstall';
 import { Header } from './components/Header';
 import { BottomNav } from './components/BottomNav';
 import { ToastContainer } from './components/Toast';
@@ -78,7 +80,12 @@ export default function App() {
     setSettings(loadedSettings);
 
     // Show onboarding if no items and onboarding not yet completed
-    if (loadedItems.length === 0 && !loadedSettings.hasCompletedOnboarding) {
+    if (!isDemoMode && new URLSearchParams(window.location.search).get('start') === '1' && loadedItems.length === 0) {
+      setIsAddItemOpen(true);
+      const updated = { ...loadedSettings, hasCompletedOnboarding: true };
+      setSettings(updated);
+      saveSettings(updated);
+    } else if (!isDemoMode && loadedItems.length === 0 && !loadedSettings.hasCompletedOnboarding) {
       setIsOnboardingOpen(true);
     }
   }, []);
@@ -420,20 +427,7 @@ export default function App() {
     setSelectedItem(null);
   };
 
-  // 1-Click Load Demo Data from Home Empty State
-  const handleLoadDemoFromEmpty = () => {
-    const demo = getSampleDemoData();
-    restoreBackupData({
-      version: '1.0.0',
-      exportedAt: new Date().toISOString(),
-      items: demo.items,
-      usageRecords: demo.records,
-      billingPeriods: demo.billingPeriods,
-      settings: { hasCompletedOnboarding: true, version: '1.0.0' },
-    });
-    handleDataReload();
-    addToast('체험용 예시 데이터가 등록되었습니다.', '스마트폰, 헬스장, 헤드폰, OTT 데이터가 적용되었습니다.');
-  };
+  const handleOpenDemo = () => window.location.assign(demoPageUrl);
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col font-sans pb-20 md:pb-8">
@@ -450,6 +444,26 @@ export default function App() {
         activeTab={activeTab}
         setActiveTab={setActiveTab}
       />
+
+      {isDemoMode ? (
+        <aside className="bg-amber-50 border-b border-amber-200">
+          <div className="max-w-4xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <p className="text-sm font-bold text-amber-900">샘플 체험 중</p>
+              <p className="text-xs text-amber-800 mt-1">자유롭게 눌러보세요. 내 소비에는 반영되지 않으며, 새로고침하면 샘플이 초기화돼요.</p>
+            </div>
+            <a href={personalPageUrl} className="px-4 py-2 rounded-xl bg-emerald-600 text-white text-sm font-bold">내 소비 시작하기</a>
+          </div>
+        </aside>
+      ) : (
+        <div className="max-w-4xl w-full mx-auto px-4 pt-4 space-y-2">
+          <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-slate-500">
+            <span>내 소비는 이 브라우저에 자동 저장돼요. 백업·복원은 상단 설정에서 할 수 있어요.</span>
+            <a href={demoPageUrl} className="text-emerald-700 font-semibold underline underline-offset-2">샘플 둘러보기</a>
+          </div>
+          <AppInstall />
+        </div>
+      )}
 
       {/* Main Content Area */}
       <main className="flex-1 max-w-4xl w-full mx-auto px-4 py-6">
@@ -468,7 +482,7 @@ export default function App() {
             onOpenLogModal={(item) => setQuickLogItem(item)}
             onNavigateToItems={() => setActiveTab('items')}
             onNavigateToAnalytics={() => setActiveTab('analytics')}
-            onLoadDemoData={items.length === 0 ? handleLoadDemoFromEmpty : undefined}
+            onLoadDemoData={items.length === 0 ? handleOpenDemo : undefined}
             onOpenReceipt={(st) => setReceiptStats(st)}
           />
         )}
@@ -521,6 +535,7 @@ export default function App() {
       <OnboardingModal
         isOpen={isOnboardingOpen}
         onClose={handleCompleteOnboarding}
+        onOpenDemo={handleOpenDemo}
         onStartAdd={() => {
           handleCompleteOnboarding();
           setIsAddItemOpen(true);

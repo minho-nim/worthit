@@ -5,12 +5,14 @@ interface OnboardingModalProps {
   isOpen: boolean;
   onClose: () => void;
   onStartAdd: () => void;
+  onOpenDemo: () => void;
 }
 
 export const OnboardingModal: React.FC<OnboardingModalProps> = ({
   isOpen,
   onClose,
   onStartAdd,
+  onOpenDemo,
 }) => {
   if (!isOpen) return null;
 
@@ -77,10 +79,10 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
 
         <div className="flex items-center gap-2.5">
           <button
-            onClick={onClose}
+            onClick={onOpenDemo}
             className="flex-1 py-2.5 px-4 text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-colors text-center"
           >
-            둘러보기
+            샘플 둘러보기
           </button>
           <button
             onClick={() => {

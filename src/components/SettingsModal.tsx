@@ -16,7 +16,8 @@ import {
   validateAndParseBackup,
   restoreBackupData,
   clearAllData,
-  getSampleDemoData,
+  isDemoMode,
+  demoPageUrl,
   BackupData,
 } from '../utils/storage';
 import { getTodayDateString } from '../utils/calculator';
@@ -41,7 +42,6 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
     periodsCount: number;
   } | null>(null);
   const [showClearConfirm, setShowClearConfirm] = useState(false);
-  const [showDemoConfirm, setShowDemoConfirm] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -100,23 +100,6 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
     onClose();
   };
 
-  // Load Demo Data
-  const handleLoadDemoData = () => {
-    const demo = getSampleDemoData();
-    restoreBackupData({
-      version: '1.0.0',
-      exportedAt: new Date().toISOString(),
-      items: demo.items,
-      usageRecords: demo.records,
-      billingPeriods: demo.billingPeriods,
-      settings: { hasCompletedOnboarding: true, version: '1.0.0' },
-    });
-    setShowDemoConfirm(false);
-    onDataChanged();
-    showToast('체험용 예시 데이터가 등록되었습니다.', '스마트폰, 헬스장, 헤드폰, OTT 데이터가 적용되었습니다.');
-    onClose();
-  };
-
   // Confirm Clear All
   const handleClearAll = () => {
     clearAllData();
@@ -154,9 +137,10 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 flex items-start gap-3 text-xs text-slate-600 leading-relaxed">
             <Info className="w-4 h-4 text-slate-400 shrink-0 mt-0.5" />
             <div>
-              <p className="font-semibold text-slate-800">로컬 브라우저 저장 안내</p>
-              WorthIt의 모든 데이터는 브라우저 내부(localStorage)에 안전하게 저장됩니다.
-              브라우저 캐시 삭제 시 데이터가 유실될 수 있으니 정기적으로 백업 파일을 다운로드해 두세요.
+              <p className="font-semibold text-slate-800">{isDemoMode ? '샘플 체험 안내' : '로컬 브라우저 저장 안내'}</p>
+              {isDemoMode
+                ? '체험 중 변경은 임시로만 유지되며 내 소비에는 반영되지 않아요. 새로고침하면 샘플로 돌아와요.'
+                : '내 소비는 이 브라우저에 자동 저장돼요. 다른 기기와 자동으로 공유되지 않으며, 사이트 데이터를 삭제하면 사라질 수 있어요. 정기적으로 백업해 주세요.'}
             </div>
           </div>
 
@@ -198,15 +182,15 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               체험용 예시 데이터
             </span>
             <p className="text-xs text-slate-500 mb-2">
-              서비스를 바로 둘러보고 싶다면 3가지 시나리오(스마트폰, 헬스장, 헤드폰 등)를 바로 불러올 수 있습니다.
+              별도 샘플 페이지에서 기능을 체험할 수 있어요. 현재 내 소비는 그대로 유지돼요.
             </p>
             <button
               type="button"
-              onClick={() => setShowDemoConfirm(true)}
+              onClick={() => window.location.assign(demoPageUrl)}
               className="w-full flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl border border-emerald-200 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 text-xs font-semibold transition-colors"
             >
               <Sparkles className="w-4 h-4 text-emerald-600" />
-              <span>체험용 예시 데이터 불러오기</span>
+              <span>별도 샘플 페이지 열기</span>
             </button>
           </div>
 
@@ -265,35 +249,6 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   className="px-4 py-1.5 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg shadow-sm"
                 >
                   데이터 복원하기
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Confirm Demo Data */}
-        {showDemoConfirm && (
-          <div className="fixed inset-0 z-60 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-in fade-in">
-            <div className="bg-white rounded-2xl max-w-sm w-full p-5 shadow-2xl border border-slate-100">
-              <h3 className="font-bold text-base text-slate-900">체험용 데이터 불러오기</h3>
-              <p className="text-xs text-slate-600 mt-2">
-                테스트용 예시 소비(스마트폰 120만원, 헬스장 30만원, 헤드폰 35만원, OTT 1.7만원)를 저장소에 불러옵니다.
-              </p>
-              <p className="text-xs text-amber-600 font-medium mt-1">
-                기존 데이터가 예시 데이터로 변경됩니다. 계속하시겠습니까?
-              </p>
-              <div className="flex justify-end gap-2 mt-4">
-                <button
-                  onClick={() => setShowDemoConfirm(false)}
-                  className="px-3 py-1.5 text-xs text-slate-600 hover:bg-slate-100 rounded-lg"
-                >
-                  취소
-                </button>
-                <button
-                  onClick={handleLoadDemoData}
-                  className="px-4 py-1.5 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg shadow-sm"
-                >
-                  불러오기
                 </button>
               </div>
             </div>

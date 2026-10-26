@@ -121,7 +121,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
               onClick={onLoadDemoData}
               className="w-full py-2.5 px-4 text-xs font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-colors"
             >
-              체험용 샘플 데이터로 둘러보기
+              별도 샘플 페이지 둘러보기
             </button>
           )}
         </div>

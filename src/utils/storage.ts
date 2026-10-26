@@ -19,9 +19,34 @@ function getLocalDateString(date: Date): string {
   return `${year}-${month}-${day}`;
 }
 
+// Demo lives in a separate document and never reads or writes personal storage.
+export const isDemoMode = new URLSearchParams(window.location.search).get('mode') === 'demo';
+export const demoPageUrl = `${import.meta.env.BASE_URL}?mode=demo`;
+export const personalPageUrl = `${import.meta.env.BASE_URL}?start=1`;
+
+const demoMemory = new Map<string, string>();
+if (isDemoMode) {
+  const demo = getSampleDemoData();
+  demoMemory.set(STORAGE_KEYS.ITEMS, JSON.stringify(demo.items));
+  demoMemory.set(STORAGE_KEYS.RECORDS, JSON.stringify(demo.records));
+  demoMemory.set(STORAGE_KEYS.BILLING_PERIODS, JSON.stringify(demo.billingPeriods));
+  demoMemory.set(STORAGE_KEYS.SETTINGS, JSON.stringify({ ...DEFAULT_SETTINGS, hasCompletedOnboarding: true }));
+}
+const appStorage = {
+  getItem: (key: string) => isDemoMode ? demoMemory.get(key) ?? null : localStorage.getItem(key),
+  setItem: (key: string, value: string) => {
+    if (isDemoMode) demoMemory.set(key, value);
+    else localStorage.setItem(key, value);
+  },
+  removeItem: (key: string) => {
+    if (isDemoMode) demoMemory.delete(key);
+    else localStorage.removeItem(key);
+  },
+};
+
 export function loadItems(): WorthItem[] {
   try {
-    const raw = localStorage.getItem(STORAGE_KEYS.ITEMS);
+    const raw = appStorage.getItem(STORAGE_KEYS.ITEMS);
     if (!raw) return [];
     const parsed = JSON.parse(raw);
     return Array.isArray(parsed) ? parsed : [];
@@ -33,7 +58,7 @@ export function loadItems(): WorthItem[] {
 
 export function saveItems(items: WorthItem[]): void {
   try {
-    localStorage.setItem(STORAGE_KEYS.ITEMS, JSON.stringify(items));
+    appStorage.setItem(STORAGE_KEYS.ITEMS, JSON.stringify(items));
   } catch (err) {
     console.error('Failed to save items to localStorage:', err);
   }
@@ -41,7 +66,7 @@ export function saveItems(items: WorthItem[]): void {
 
 export function loadRecords(): UsageRecord[] {
   try {
-    const raw = localStorage.getItem(STORAGE_KEYS.RECORDS);
+    const raw = appStorage.getItem(STORAGE_KEYS.RECORDS);
     if (!raw) return [];
     const parsed = JSON.parse(raw);
     return Array.isArray(parsed) ? parsed : [];
@@ -53,7 +78,7 @@ export function loadRecords(): UsageRecord[] {
 
 export function saveRecords(records: UsageRecord[]): void {
   try {
-    localStorage.setItem(STORAGE_KEYS.RECORDS, JSON.stringify(records));
+    appStorage.setItem(STORAGE_KEYS.RECORDS, JSON.stringify(records));
   } catch (err) {
     console.error('Failed to save usage records to localStorage:', err);
   }
@@ -61,7 +86,7 @@ export function saveRecords(records: UsageRecord[]): void {
 
 export function loadBillingPeriods(): BillingPeriod[] {
   try {
-    const raw = localStorage.getItem(STORAGE_KEYS.BILLING_PERIODS);
+    const raw = appStorage.getItem(STORAGE_KEYS.BILLING_PERIODS);
     if (!raw) return [];
     const parsed = JSON.parse(raw);
     return Array.isArray(parsed) ? parsed : [];
@@ -73,7 +98,7 @@ export function loadBillingPeriods(): BillingPeriod[] {
 
 export function saveBillingPeriods(periods: BillingPeriod[]): void {
   try {
-    localStorage.setItem(STORAGE_KEYS.BILLING_PERIODS, JSON.stringify(periods));
+    appStorage.setItem(STORAGE_KEYS.BILLING_PERIODS, JSON.stringify(periods));
   } catch (err) {
     console.error('Failed to save billing periods to localStorage:', err);
   }
@@ -81,7 +106,7 @@ export function saveBillingPeriods(periods: BillingPeriod[]): void {
 
 export function loadSettings(): AppSettings {
   try {
-    const raw = localStorage.getItem(STORAGE_KEYS.SETTINGS);
+    const raw = appStorage.getItem(STORAGE_KEYS.SETTINGS);
     if (!raw) return DEFAULT_SETTINGS;
     const parsed = JSON.parse(raw);
     return { ...DEFAULT_SETTINGS, ...parsed };
@@ -93,7 +118,7 @@ export function loadSettings(): AppSettings {
 
 export function saveSettings(settings: AppSettings): void {
   try {
-    localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(settings));
+    appStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(settings));
   } catch (err) {
     console.error('Failed to save settings:', err);
   }
@@ -220,10 +245,10 @@ export function restoreBackupData(data: BackupData): void {
 }
 
 export function clearAllData(): void {
-  localStorage.removeItem(STORAGE_KEYS.ITEMS);
-  localStorage.removeItem(STORAGE_KEYS.RECORDS);
-  localStorage.removeItem(STORAGE_KEYS.BILLING_PERIODS);
-  localStorage.removeItem(STORAGE_KEYS.SETTINGS);
+  appStorage.removeItem(STORAGE_KEYS.ITEMS);
+  appStorage.removeItem(STORAGE_KEYS.RECORDS);
+  appStorage.removeItem(STORAGE_KEYS.BILLING_PERIODS);
+  appStorage.removeItem(STORAGE_KEYS.SETTINGS);
 }
 
 export function getSampleDemoData(): {
