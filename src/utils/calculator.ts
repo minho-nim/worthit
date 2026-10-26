@@ -311,7 +311,7 @@ export function getRealLifeEquivalence(cost: number): { emoji: string; label: st
     return { emoji: '📓', label: '노트 한 권', text: '학교나 회사에서 쓰는 기본 노트 가격대' };
   }
   if (cost <= 3500) {
-    return { emoji: '🔋', label: '건전지 한 묶음', text: '리모컨이나 생활기기에 넣는 소모품' };
+    return { emoji: '🧦', label: '기본 양말 한 켤레', text: '일상에서 자주 신고 바꾸는 기본 의류' };
   }
   if (cost <= 4000) {
     return { emoji: '🪥', label: '칫솔 세트', text: '매일 쓰고 주기적으로 바꾸는 위생용품' };
@@ -326,7 +326,7 @@ export function getRealLifeEquivalence(cost: number): { emoji: string; label: st
     return { emoji: '☕', label: '카페 커피 한 잔', text: '매장에서 사 마시는 음료 한 잔 가격대' };
   }
   if (cost <= 7000) {
-    return { emoji: '🔌', label: '휴대폰 충전 케이블', text: '일반형 케이블 하나를 교체하는 금액' };
+    return { emoji: '📺', label: '넷플릭스 광고형 한 달', text: '광고형 스탠다드 월 7,000원 기준' };
   }
   if (cost <= 8000) {
     return { emoji: '🧴', label: '샴푸 리필 한 팩', text: '욕실에서 자주 보충하는 생활 소모품' };
@@ -338,19 +338,22 @@ export function getRealLifeEquivalence(cost: number): { emoji: string; label: st
     return { emoji: '☂️', label: '기본 우산 한 개', text: '갑작스러운 비에 사는 실용적인 생활용품' };
   }
   if (cost <= 12000) {
-    return { emoji: '🎵', label: '음악 스트리밍 한 달', text: '개인용 음원 구독 요금제에 가까운 금액' };
+    return { emoji: '🛡️', label: '휴대폰 보호필름 교체', text: '보호필름을 구입하거나 교체하는 비용 수준' };
   }
   if (cost <= 15000) {
-    return { emoji: '🎬', label: '일반 영화 관람권 한 장', text: '성인 일반 2D 영화 한 편을 보는 가격대' };
+    return { emoji: '▶️', label: 'YouTube Premium 한 달', text: '한국 웹·Android 개인 요금 월 14,900원 기준' };
   }
   if (cost <= 18000) {
-    return { emoji: '📚', label: '단행본 한 권', text: '서점에서 에세이나 소설 한 권을 사는 금액' };
+    return { emoji: '🎬', label: '일반 영화 관람권 한 장', text: '성인 일반 2D 영화 한 편을 보는 가격대' };
   }
   if (cost <= 20000) {
-    return { emoji: '📱', label: '휴대폰 케이스 한 개', text: '일반형 케이스로 휴대폰을 보호하는 비용' };
+    return { emoji: '📚', label: '단행본 한 권', text: '서점에서 에세이나 소설 한 권을 사는 금액' };
   }
-  if (cost <= 30000) {
+  if (cost <= 25000) {
     return { emoji: '👕', label: '기본 티셔츠 한 장', text: '자주 입는 일상복 하나를 사는 금액' };
+  }
+  if (cost <= 35000) {
+    return { emoji: '🤖', label: 'ChatGPT Plus 한 달', text: '개인용 AI 구독 한 달 수준 · 국가와 결제 경로에 따라 실제 요금이 달라질 수 있어요' };
   }
   if (cost <= 45000) {
     return { emoji: '🔋', label: '보조배터리 한 개', text: '외출할 때 챙기는 충전용품 가격대' };
