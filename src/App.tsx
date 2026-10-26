@@ -268,51 +268,6 @@ export default function App() {
     }
   };
 
-  // Batch Quick Add Action (Check-check multi-log)
-  const handleBatchQuickAdd = (itemIds: string[]) => {
-    if (itemIds.length === 0) return;
-    const nowIso = new Date().toISOString();
-    const today = getTodayDateString();
-
-    const newRecordsList: UsageRecord[] = itemIds.map((id) => ({
-      id: 'rec-' + Date.now().toString(36) + Math.random().toString(36).substring(2, 7),
-      itemId: id,
-      usedAt: today,
-      quantity: 1,
-      createdAt: nowIso,
-    }));
-
-    const updatedRecords = [...newRecordsList, ...records];
-    setRecords(updatedRecords);
-    saveRecords(updatedRecords);
-
-    // Check newly achieved items
-    const newlyAchievedNames: string[] = [];
-    itemIds.forEach((id) => {
-      const item = items.find((i) => i.id === id);
-      if (!item) return;
-      const before = calculateItemStats(item, records, billingPeriods);
-      const after = calculateItemStats(item, updatedRecords, billingPeriods);
-      if (!before.isGoalAchieved && after.isGoalAchieved) {
-        newlyAchievedNames.push(item.name);
-      }
-    });
-
-    if (newlyAchievedNames.length > 0) {
-      addToast(
-        '목표 달성 축하! 🎉',
-        `"${newlyAchievedNames.join(', ')}" 목표 사용단가에 도달했어요!`,
-        'success'
-      );
-    } else {
-      addToast(
-        '오늘 사용 일괄 체크 완료! ✓',
-        `${itemIds.length}개 소비 항목의 사용단가가 각각 낮아졌어요.`,
-        'success'
-      );
-    }
-  };
-
   // Custom Record Save
   const handleSaveCustomRecord = (
     itemId: string,
@@ -510,7 +465,6 @@ export default function App() {
             }}
             onSelectItem={(item) => setSelectedItem(item)}
             onQuickAddOne={handleQuickAddOne}
-            onBatchQuickAdd={handleBatchQuickAdd}
             onOpenLogModal={(item) => setQuickLogItem(item)}
             onNavigateToItems={() => setActiveTab('items')}
             onNavigateToAnalytics={() => setActiveTab('analytics')}

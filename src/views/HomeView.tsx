@@ -25,6 +25,7 @@ import {
   formatDate,
   calculateOverallWorthScore,
   calculateCategoryWorthStats,
+  isDormantItem,
 } from '../utils/calculator';
 
 interface HomeViewProps {
@@ -35,7 +36,6 @@ interface HomeViewProps {
   onOpenAddItem: () => void;
   onSelectItem: (item: WorthItem) => void;
   onQuickAddOne: (item: WorthItem, e: React.MouseEvent) => void;
-  onBatchQuickAdd: (itemIds: string[]) => void;
   onOpenLogModal: (item: WorthItem) => void;
   onNavigateToItems: () => void;
   onNavigateToAnalytics?: () => void;
@@ -51,7 +51,6 @@ export const HomeView: React.FC<HomeViewProps> = ({
   onOpenAddItem,
   onSelectItem,
   onQuickAddOne,
-  onBatchQuickAdd,
   onOpenLogModal,
   onNavigateToItems,
   onNavigateToAnalytics,
@@ -160,14 +159,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
     .filter((s) => !s.isGoalAchieved && s.progress >= 40)
     .sort((a, b) => b.progress - a.progress);
 
-  const inactiveStats = itemStats
-    .filter((s) => s.item.usageMethod === 'usage' && s.item.status === 'active')
-    .filter((s) => {
-      if (!s.lastUsedAt) return true;
-      const lastDate = new Date(s.lastUsedAt);
-      const diff = (now.getTime() - lastDate.getTime()) / 86400000;
-      return diff >= 7;
-    });
+  const inactiveStats = itemStats.filter((stats) => isDormantItem(stats));
 
   // Filtered Cards to display in the main feed
   const displayedStats =
@@ -202,12 +194,9 @@ export const HomeView: React.FC<HomeViewProps> = ({
       {/* 2. Instagram Stories-style Circular Quick Tray */}
       <TodayStoriesTray
         items={items}
-        itemStats={itemStats}
         records={records}
         consecutiveStreak={consecutiveStreak}
         onQuickAddOne={onQuickAddOne}
-        onBatchQuickAdd={onBatchQuickAdd}
-        onSelectItem={onSelectItem}
         onOpenAddItem={onOpenAddItem}
       />
 
@@ -343,6 +332,13 @@ export const HomeView: React.FC<HomeViewProps> = ({
             </button>
           </div>
         </div>
+
+        {feedFilter === 'inactive' && (
+          <p className="text-xs text-slate-500 leading-relaxed px-1">
+            사용 중인 횟수·시간 기록 항목 중, 사용 기록이 없거나 마지막 기록일부터 7일 이상 지난 소비예요.
+            새로 등록한 항목도 기록이 없으면 포함되며, 일수 자동 계산 항목은 제외돼요. 실제 사용 여부가 아닌 기록 기준이에요.
+          </p>
+        )}
 
         {/* Card Grid */}
         {displayedStats.length === 0 ? (

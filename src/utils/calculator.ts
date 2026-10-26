@@ -39,6 +39,13 @@ export function getTodayDateString(date: Date = new Date()): string {
   return `${year}-${month}-${day}`;
 }
 
+/** Dormancy follows local calendar dates and recorded usage. */
+export function isDormantItem(stats: ItemStats, today = getTodayDateString()): boolean {
+  if (stats.item.usageMethod !== 'usage' || stats.item.status !== 'active') return false;
+  if (!stats.lastUsedAt) return true;
+  return getDaysOwned(stats.lastUsedAt, today) - 1 >= 7;
+}
+
 /**
  * Formats KRW currency with commas
  */

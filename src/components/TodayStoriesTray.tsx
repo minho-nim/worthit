@@ -1,43 +1,23 @@
-import React, { useState } from 'react';
-import {
-  Check,
-  Plus,
-  Flame,
-  Sparkles,
-  Package,
-  RefreshCw,
-  CreditCard,
-  CheckSquare,
-  ChevronRight,
-  SlidersHorizontal,
-} from 'lucide-react';
-import { WorthItem, UsageRecord, ItemStats } from '../types';
-import { getTodayDateString, formatKRW } from '../utils/calculator';
+import React from 'react';
+import { Check, Plus, Flame } from 'lucide-react';
+import { WorthItem, UsageRecord } from '../types';
+import { getTodayDateString } from '../utils/calculator';
 
 interface TodayStoriesTrayProps {
   items: WorthItem[];
-  itemStats: ItemStats[];
   records: UsageRecord[];
   consecutiveStreak: number;
   onQuickAddOne: (item: WorthItem, e: React.MouseEvent) => void;
-  onBatchQuickAdd: (itemIds: string[]) => void;
-  onSelectItem: (item: WorthItem) => void;
   onOpenAddItem: () => void;
 }
 
 export const TodayStoriesTray: React.FC<TodayStoriesTrayProps> = ({
   items,
-  itemStats,
   records,
   consecutiveStreak,
   onQuickAddOne,
-  onBatchQuickAdd,
-  onSelectItem,
   onOpenAddItem,
 }) => {
-  const [isChecklistOpen, setIsChecklistOpen] = useState(false);
-  const [selectedIds, setSelectedIds] = useState<string[]>([]);
-
   const todayStr = getTodayDateString();
 
   // Active usage-based items
@@ -49,7 +29,7 @@ export const TodayStoriesTray: React.FC<TodayStoriesTrayProps> = ({
 
   // Logged today IDs
   const loggedTodayItemIds = new Set(
-    records.filter((r) => r.usedAt === todayStr).map((r) => r.itemId)
+    records.filter((r) => r.usedAt === todayStr && r.quantity > 0).map((r) => r.itemId)
   );
 
   const completedTodayCount = activeUsageItems.filter((it) =>
@@ -72,26 +52,6 @@ export const TodayStoriesTray: React.FC<TodayStoriesTrayProps> = ({
     return '✨';
   };
 
-  const handleToggleSelect = (id: string) => {
-    setSelectedIds((prev) =>
-      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
-    );
-  };
-
-  const handleSelectAllUnlogged = () => {
-    const unlogged = activeUsageItems
-      .filter((it) => !loggedTodayItemIds.has(it.id))
-      .map((it) => it.id);
-    setSelectedIds(unlogged);
-  };
-
-  const handleBatchSubmit = () => {
-    if (selectedIds.length === 0) return;
-    onBatchQuickAdd(selectedIds);
-    setSelectedIds([]);
-    setIsChecklistOpen(false);
-  };
-
   return (
     <div className="bg-white rounded-3xl border border-slate-200/80 shadow-xs p-4 sm:p-5 space-y-3">
       {/* Instagram Story Tray Header */}
@@ -99,7 +59,7 @@ export const TodayStoriesTray: React.FC<TodayStoriesTrayProps> = ({
         <div className="flex items-center gap-2">
           <span className="text-xs font-bold text-slate-900 tracking-tight flex items-center gap-1.5">
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-            <span>오늘의 본전 스토리</span>
+            <span>오늘 사용 체크</span>
           </span>
           <span className="text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200/60">
             {completedTodayCount} / {activeUsageItems.length} 완료
@@ -114,25 +74,15 @@ export const TodayStoriesTray: React.FC<TodayStoriesTrayProps> = ({
             </span>
           )}
 
-          <button
-            type="button"
-            onClick={() => setIsChecklistOpen(!isChecklistOpen)}
-            className={`px-2.5 py-1 rounded-xl text-xs font-semibold transition-all flex items-center gap-1 ${
-              isChecklistOpen
-                ? 'bg-slate-900 text-white'
-                : 'bg-slate-100 text-slate-600 hover:text-slate-900'
-            }`}
-          >
-            <CheckSquare className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">체크리스트</span>
-          </button>
+
         </div>
       </div>
 
       {/* INSTAGRAM-STYLE CIRCULAR STORIES TRAY */}
       <div className="flex items-center gap-3.5 overflow-x-auto pb-1 pt-1 scrollbar-none select-none">
         {/* Story 0: Plus Add Story */}
-        <div
+        <button
+          type="button"
           onClick={onOpenAddItem}
           className="flex flex-col items-center gap-1 shrink-0 cursor-pointer group"
         >
@@ -142,7 +92,7 @@ export const TodayStoriesTray: React.FC<TodayStoriesTrayProps> = ({
           <span className="text-[11px] font-medium text-slate-500 group-hover:text-slate-800 truncate w-14 text-center">
             새 소비
           </span>
-        </div>
+        </button>
 
         {/* Stories for each item */}
         {activeUsageItems.map((item) => {
@@ -150,13 +100,16 @@ export const TodayStoriesTray: React.FC<TodayStoriesTrayProps> = ({
           const emoji = getEmoji(item.name, item.category);
 
           return (
-            <div
+            <button
+              type="button"
+              disabled={isLogged}
+              aria-label={`${item.name} ${isLogged ? '오늘 기록 완료' : '오늘 사용 1회 기록'}`}
               key={item.id}
               onClick={(e) => {
                 onQuickAddOne(item, e);
               }}
-              className="flex flex-col items-center gap-1 shrink-0 cursor-pointer group relative active:scale-95 transition-transform"
-              title={isLogged ? '오늘 완료! 클릭 시 1회 추가 기록' : '탭하여 오늘 1회 기록'}
+              className="flex flex-col items-center gap-1 shrink-0 cursor-pointer disabled:cursor-default group relative enabled:active:scale-95 transition-transform rounded-xl focus-visible:outline-2 focus-visible:outline-emerald-600"
+              title={`${item.name} · ${isLogged ? '오늘 기록 완료' : '탭하여 오늘 1회 기록'}`}
             >
               {/* Circular Avatar with Instagram-style Ring */}
               <div
@@ -186,86 +139,17 @@ export const TodayStoriesTray: React.FC<TodayStoriesTrayProps> = ({
               >
                 {item.name}
               </span>
-            </div>
+              <span className={`text-[10px] ${isLogged ? 'text-emerald-700' : 'text-slate-500'}`}>
+                {isLogged ? '오늘 완료' : '눌러서 기록'}
+              </span>
+            </button>
           );
         })}
       </div>
 
-      {/* POPUP / ACCORDION CHECKLIST (When user taps "체크리스트") */}
-      {isChecklistOpen && (
-        <div className="pt-3 border-t border-slate-100 space-y-3 animate-in fade-in duration-200">
-          <div className="flex items-center justify-between text-xs text-slate-500">
-            <span>오늘 사용한 물건을 체크하세요 ({selectedIds.length}개 선택)</span>
-            <button
-              type="button"
-              onClick={handleSelectAllUnlogged}
-              className="text-emerald-700 hover:underline font-bold"
-            >
-              미기록 전체 선택
-            </button>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-56 overflow-y-auto pr-0.5 scrollbar-thin">
-            {activeUsageItems.map((item) => {
-              const isChecked = selectedIds.includes(item.id);
-              const isLogged = loggedTodayItemIds.has(item.id);
-              const emoji = getEmoji(item.name, item.category);
-
-              return (
-                <div
-                  key={item.id}
-                  onClick={() => handleToggleSelect(item.id)}
-                  className={`flex items-center justify-between p-2.5 rounded-2xl border transition-all cursor-pointer select-none ${
-                    isChecked
-                      ? 'bg-emerald-50 border-emerald-500 shadow-2xs'
-                      : isLogged
-                      ? 'bg-slate-50/70 border-slate-200'
-                      : 'bg-white hover:bg-slate-50 border-slate-200'
-                  }`}
-                >
-                  <div className="flex items-center gap-2.5 min-w-0 pr-2">
-                    <span className="text-lg">{emoji}</span>
-                    <span className="text-xs font-bold text-slate-900 truncate">
-                      {item.name}
-                    </span>
-                  </div>
-
-                  <div className="flex items-center gap-2 shrink-0">
-                    {isLogged && (
-                      <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full">
-                        오늘 완료
-                      </span>
-                    )}
-                    <div
-                      className={`w-5 h-5 rounded-md flex items-center justify-center border transition-all ${
-                        isChecked
-                          ? 'bg-emerald-600 border-emerald-600 text-white'
-                          : 'border-slate-300 bg-white'
-                      }`}
-                    >
-                      {isChecked && <Check className="w-3.5 h-3.5 stroke-[3]" />}
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-
-          <button
-            type="button"
-            onClick={handleBatchSubmit}
-            disabled={selectedIds.length === 0}
-            className={`w-full py-2.5 px-4 rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-1.5 shadow-sm ${
-              selectedIds.length > 0
-                ? 'bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer'
-                : 'bg-slate-100 text-slate-400 cursor-not-allowed'
-            }`}
-          >
-            <Check className="w-3.5 h-3.5 stroke-[3]" />
-            <span>선택한 {selectedIds.length}개 한 번에 오늘 완료!</span>
-          </button>
-        </div>
-      )}
+      <p className="text-[11px] text-slate-500 leading-relaxed">
+        아이콘을 누르면 오늘 사용 1회가 바로 기록돼요. 추가 사용은 아래 소비 카드의 +1로 기록해 주세요.
+      </p>
     </div>
   );
 };
