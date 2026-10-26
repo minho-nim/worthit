@@ -651,13 +651,6 @@ export default function App() {
         stats={receiptStats}
         isOpen={!!receiptStats}
         onClose={() => setReceiptStats(null)}
-        onCopySuccess={() =>
-          addToast(
-            '영수증 내용이 복사되었습니다!',
-            'SNS나 메모장에 가치 소비를 기록해 보세요.',
-            'success'
-          )
-        }
       />
     </div>
   );

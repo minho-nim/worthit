@@ -1,23 +1,26 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { X, Check, Copy, Sparkles, TrendingUp, Download } from 'lucide-react';
+import { X, Copy, Download, FileDown, Image } from 'lucide-react';
 import { ItemStats } from '../types';
-import { formatKRW, formatDate, getRealLifeEquivalence } from '../utils/calculator';
+import { formatKRW, formatDate, getRealLifeEquivalence, getTodayDateString } from '../utils/calculator';
+import { downloadReceipt, receiptFilename, receiptPng, saveReceiptPdf } from '../utils/receiptExport';
 
 interface ReceiptModalProps {
   stats: ItemStats | null;
   isOpen: boolean;
   onClose: () => void;
-  onCopySuccess: () => void;
 }
 
 export const ReceiptModal: React.FC<ReceiptModalProps> = ({
   stats,
   isOpen,
   onClose,
-  onCopySuccess,
 }) => {
-  const [copied, setCopied] = useState(false);
-  const [copyError, setCopyError] = useState('');
+  const [busy, setBusy] = useState<'png' | 'image' | 'pdf' | 'text' | null>(null);
+  const [message, setMessage] = useState('');
+  const [exportError, setExportError] = useState('');
+  const receiptNode = useRef<HTMLDivElement>(null);
+  const operation = useRef(0);
+  const inProgress = useRef(false);
   const closeButton = useRef<HTMLButtonElement>(null);
   const onCloseRef = useRef(onClose);
   useEffect(() => { onCloseRef.current = onClose; }, [onClose]);
@@ -25,8 +28,9 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({
   useEffect(() => {
     if (!isOpen) return;
     const previousFocus = document.activeElement as HTMLElement | null;
-    setCopied(false);
-    setCopyError('');
+    setBusy(null);
+    setMessage('');
+    setExportError('');
     closeButton.current?.focus();
     const handleKey = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
@@ -37,6 +41,8 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({
     };
     document.addEventListener('keydown', handleKey, true);
     return () => {
+      operation.current += 1;
+      inProgress.current = false;
       document.removeEventListener('keydown', handleKey, true);
       previousFocus?.focus();
     };
@@ -49,15 +55,46 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({
   const unit = isDays ? '일' : item.usageUnit;
   const equivalence = getRealLifeEquivalence(currentUnitCost ?? item.purchasePrice);
 
-  const handleCopySummary = () => {
+  const handleExport = async (action: 'png' | 'image' | 'pdf' | 'text') => {
+    const node = receiptNode.current;
+    if (!node || inProgress.current) return;
+    inProgress.current = true;
+    const currentOperation = ++operation.current;
+    setBusy(action);
+    setMessage('');
+    setExportError('');
+    const filename = receiptFilename(item.name, getTodayDateString());
     const text = `🧾 [WorthIt 본전 영수증]\n항목: ${item.name}\n구매가: ${formatKRW(item.purchasePrice)}\n현재 사용단가: ${stats.unitCostFormatted}\n목표 단가: ${stats.targetCostFormatted}\n달성률: ${progress}%\n현실 체감 가치: ${equivalence.emoji} ${equivalence.label} (${equivalence.text})\n상태: ${isGoalAchieved ? '🎉 본전 달성 완료!' : '꾸준히 가치 창출 중!'}\n\n#WorthIt #본전뽑기 #가치소비`;
-
-    setCopyError('');
-    navigator.clipboard.writeText(text).then(() => {
-      setCopied(true);
-      onCopySuccess();
-      setTimeout(() => setCopied(false), 2000);
-    }).catch(() => setCopyError('복사하지 못했어요. 브라우저의 클립보드 권한을 확인해 주세요.'));
+    try {
+      if (action === 'image') {
+        if (!navigator.clipboard?.write || typeof ClipboardItem === 'undefined'
+          || (ClipboardItem.supports && !ClipboardItem.supports('image/png'))) {
+          throw new Error('이 브라우저에서는 이미지 복사를 지원하지 않아요. PNG 저장을 이용해 주세요.');
+        }
+        // Start write during the click gesture, before async rendering, for Safari support.
+        await navigator.clipboard.write([new ClipboardItem({ 'image/png': receiptPng(node) })]);
+      } else if (action === 'png') {
+        const png = await receiptPng(node);
+        if (currentOperation !== operation.current) return;
+        downloadReceipt(png, `${filename}.png`);
+      } else if (action === 'pdf') {
+        await saveReceiptPdf(node, filename);
+      } else {
+        if (!navigator.clipboard?.writeText) throw new Error('이 브라우저에서는 텍스트 복사를 지원하지 않아요.');
+        await navigator.clipboard.writeText(text);
+      }
+      if (currentOperation === operation.current) setMessage({
+        png: 'PNG 다운로드를 시작했어요.', image: '영수증 이미지를 복사했어요. 채팅이나 메모에 붙여넣어 보세요.',
+        pdf: 'PDF 다운로드를 시작했어요.', text: '영수증 텍스트를 복사했어요.',
+      }[action]);
+    } catch (error) {
+      if (currentOperation === operation.current) setExportError(
+        error instanceof Error && error.name !== 'NotAllowedError' ? error.message
+          : '복사 권한을 확인하거나 PNG 저장을 이용해 주세요.'
+      );
+    } finally {
+      if (currentOperation === operation.current) { setBusy(null); inProgress.current = false; }
+    }
   };
 
   return (
@@ -78,7 +115,7 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({
         </button>
 
         {/* Receipt Outer Container */}
-        <div className="w-full bg-slate-50 border border-slate-200 rounded-2xl p-5 relative shadow-inner font-mono text-xs text-slate-800 space-y-4">
+        <div ref={receiptNode} className="w-full shrink-0 bg-slate-50 border border-slate-200 rounded-2xl p-5 relative shadow-inner font-mono text-xs text-slate-800 space-y-4">
           {/* Header */}
           <div className="text-center border-b border-dashed border-slate-300 pb-3">
             <span className="text-[10px] tracking-widest text-slate-400 uppercase font-sans font-bold">
@@ -96,7 +133,7 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({
           <div className="space-y-1.5 text-xs">
             <div className="flex justify-between items-center">
               <span className="text-slate-500 font-sans">소비 항목</span>
-              <strong className="font-sans text-slate-900 truncate max-w-[170px]">
+              <strong className="font-sans text-slate-900 text-right break-words max-w-[170px]">
                 {item.name}
               </strong>
             </div>
@@ -167,28 +204,24 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({
           </div>
         </div>
 
-        {/* Copy Action */}
-        <div className="w-full mt-4 flex gap-2">
+        <div className="w-full mt-4 grid grid-cols-3 gap-2" aria-busy={busy !== null}>
+          <button type="button" onClick={() => handleExport('png')} disabled={busy !== null} className="flex flex-col items-center gap-1.5 py-3 rounded-xl bg-emerald-600 text-white text-xs font-bold hover:bg-emerald-700 disabled:opacity-50"><Download className="w-4 h-4" />PNG 저장</button>
+          <button type="button" onClick={() => handleExport('image')} disabled={busy !== null} className="flex flex-col items-center gap-1.5 py-3 rounded-xl border border-emerald-300 text-emerald-800 text-xs font-bold hover:bg-emerald-50 disabled:opacity-50"><Image className="w-4 h-4" />이미지 복사</button>
+          <button type="button" onClick={() => handleExport('pdf')} disabled={busy !== null} className="flex flex-col items-center gap-1.5 py-3 rounded-xl border border-slate-300 text-slate-700 text-xs font-bold hover:bg-slate-50 disabled:opacity-50"><FileDown className="w-4 h-4" />PDF 저장</button>
+        </div>
+        <p className="w-full mt-2 text-xs text-emerald-700" role="status" aria-live="polite">{busy ? '영수증을 준비하고 있어요…' : message}</p>
+        <div className="w-full mt-3 flex gap-2">
           <button type="button" onClick={onClose} className="px-4 py-2.5 rounded-xl border border-slate-200 text-sm font-semibold text-slate-600 hover:bg-slate-50">닫기</button>
           <button
             type="button"
-            onClick={handleCopySummary}
-            className="flex-1 flex items-center justify-center gap-1.5 py-2.5 px-4 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white rounded-xl text-xs font-bold transition-colors shadow-sm shadow-emerald-600/20"
+            onClick={() => handleExport('text')}
+            disabled={busy !== null}
+            className="flex-1 flex items-center justify-center gap-1.5 py-2.5 px-4 text-slate-600 rounded-xl text-xs font-semibold hover:bg-slate-50 disabled:opacity-50"
           >
-            {copied ? (
-              <>
-                <Check className="w-4 h-4 stroke-[3]" />
-                <span>복사 완료!</span>
-              </>
-            ) : (
-              <>
-                <Copy className="w-4 h-4" />
-                <span>영수증 텍스트 복사</span>
-              </>
-            )}
+            <Copy className="w-4 h-4" /><span>텍스트 복사</span>
           </button>
         </div>
-        {copyError && <p role="alert" className="mt-2 text-xs text-rose-600">{copyError}</p>}
+        {exportError && <p role="alert" className="mt-2 text-xs text-rose-600">{exportError}</p>}
       </div>
     </div>
   );
