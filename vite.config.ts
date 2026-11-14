@@ -6,14 +6,15 @@ import {defineConfig} from 'vite';
 
 export default defineConfig(() => {
   return {
+    // 기존 설치 앱·주소·저장 범위를 이어 쓰기 위해 경로와 설치 ID는 유지합니다.
     base: '/worthit/',
     plugins: [react(), tailwindcss(), VitePWA({
       registerType: 'prompt',
       includeAssets: ['icon-192.png', 'icon-512.png', 'apple-touch-icon.png', 'favicon.svg'],
       manifest: {
         id: '/worthit/',
-        name: 'WorthIt — 이거 본전 뽑았나?',
-        short_name: 'WorthIt',
+        name: 'Valumin — 이거 본전 뽑았나?',
+        short_name: 'Valumin',
         description: '내 소비의 사용 기록과 목표 사용단가를 관리해요.',
         lang: 'ko',
         start_url: '/worthit/',
