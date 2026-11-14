@@ -64,7 +64,7 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({
     setMessage('');
     setExportError('');
     const filename = receiptFilename(item.name, getTodayDateString());
-    const text = `🧾 [WorthIt 본전 영수증]\n항목: ${item.name}\n구매가: ${formatKRW(item.purchasePrice)}\n현재 사용단가: ${stats.unitCostFormatted}\n목표 단가: ${stats.targetCostFormatted}\n달성률: ${progress}%\n현실 체감 가치: ${equivalence.emoji} ${equivalence.label} (${equivalence.text})\n상태: ${isGoalAchieved ? '🎉 내가 정한 목표 달성!' : '내 목표를 향해 사용 중!'}\n\n#WorthIt #본전뽑기 #가치소비`;
+    const text = `🧾 [Valumin 본전 영수증]\n항목: ${item.name}\n구매가: ${formatKRW(item.purchasePrice)}\n현재 사용단가: ${stats.unitCostFormatted}\n목표 단가: ${stats.targetCostFormatted}\n달성률: ${progress}%\n현실 체감 가치: ${equivalence.emoji} ${equivalence.label} (${equivalence.text})\n상태: ${isGoalAchieved ? '🎉 내가 정한 목표 달성!' : '내 목표를 향해 사용 중!'}\n\n#Valumin #본전뽑기 #가치소비`;
     try {
       if (action === 'image') {
         if (!navigator.clipboard?.write || typeof ClipboardItem === 'undefined'
@@ -122,7 +122,7 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({
               OFFICIAL VALUE RECEIPT
             </span>
             <h3 id="receipt-title" className="text-base font-bold tracking-tight text-slate-900 font-sans mt-0.5">
-              WorthIt 가치 증명서
+              Valumin 가치 증명서
             </h3>
             <p className="text-[11px] text-slate-500 font-sans mt-0.5">
               이미 산 물건을 가장 지혜롭게 쓰는 방법
@@ -200,7 +200,7 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({
 
           {/* Footer Barcode effect */}
           <div className="pt-1 text-center font-sans text-[10px] text-slate-400 border-t border-dashed border-slate-300">
-            <span>ISSUED BY WORTHIT · {new Date().toLocaleDateString('ko-KR')}</span>
+            <span>ISSUED BY Valumin · {new Date().toLocaleDateString('ko-KR')}</span>
           </div>
         </div>
 

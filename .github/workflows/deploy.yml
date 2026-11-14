@@ -45,3 +45,42 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+      - name: Verify public app and manifest
+        env:
+          DEPLOYMENT_URL: ${{ steps.deployment.outputs.page_url }}
+          DEPLOY_SHA: ${{ github.sha }}
+        run: |
+          node --input-type=module <<'JS'
+          import assert from 'node:assert/strict';
+          const base = new URL(process.env.DEPLOYMENT_URL);
+          base.pathname = base.pathname.replace(/\/?$/, '/');
+          let lastError;
+          for (let attempt = 0; attempt < 12; attempt++) {
+            try {
+              const request = async (path) => {
+                const url = new URL(path, base);
+                url.searchParams.set('deploy', process.env.DEPLOY_SHA);
+                const response = await fetch(url);
+                assert.ok(response.ok, `${response.status} ${url.pathname}`);
+                return response;
+              };
+              const html = await (await request('./')).text();
+              assert.match(html, /<title>Valumin/);
+              const script = html.match(/<script[^>]+src="([^"]+)"/);
+              assert.ok(script, 'Entry script is missing');
+              assert.ok(new URL(script[1], base).pathname.startsWith(base.pathname));
+              assert.match((await request(script[1])).headers.get('content-type'), /javascript/);
+              const manifest = await (await request('manifest.webmanifest')).json();
+              assert.equal(manifest.short_name, 'Valumin');
+              assert.equal(manifest.start_url, base.pathname);
+              assert.equal(manifest.scope, base.pathname);
+              assert.equal(manifest.id, '/worthit/');
+              console.log(`공개 앱 검증 통과: ${base.href}`);
+              process.exit(0);
+            } catch (error) {
+              lastError = error;
+              if (attempt < 11) await new Promise(resolve => setTimeout(resolve, 5000));
+            }
+          }
+          throw lastError;
+          JS

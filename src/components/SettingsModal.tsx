@@ -58,7 +58,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
       const a = document.createElement('a');
       const dateStr = getTodayDateString();
       a.href = url;
-      a.download = `worthit-backup-${dateStr}.json`;
+      a.download = `Valumin-backup-${dateStr}.json`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);

@@ -24,7 +24,7 @@ export const Header: React.FC<HeaderProps> = ({
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="font-bold text-lg tracking-tight text-slate-900">WorthIt</span>
+              <span className="font-bold text-lg tracking-tight text-slate-900">Valumin</span>
               <span className="text-[11px] font-medium text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200/60">
                 v0.1
               </span>

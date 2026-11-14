@@ -6,18 +6,19 @@ import {defineConfig} from 'vite';
 
 export default defineConfig(() => {
   return {
-    base: '/worthit/',
+    // 운영 경로는 저장소 이름을 따르고, 설치 ID와 저장 키는 기존 앱과 이어 씁니다.
+    base: '/Valumin/',
     plugins: [react(), tailwindcss(), VitePWA({
       registerType: 'prompt',
       includeAssets: ['icon-192.png', 'icon-512.png', 'apple-touch-icon.png', 'favicon.svg'],
       manifest: {
         id: '/worthit/',
-        name: 'WorthIt — 이거 본전 뽑았나?',
-        short_name: 'WorthIt',
+        name: 'Valumin — 이거 본전 뽑았나?',
+        short_name: 'Valumin',
         description: '내 소비의 사용 기록과 목표 사용단가를 관리해요.',
         lang: 'ko',
-        start_url: '/worthit/',
-        scope: '/worthit/',
+        start_url: '/Valumin/',
+        scope: '/Valumin/',
         display: 'standalone',
         theme_color: '#059669',
         background_color: '#f8fafc',
@@ -30,8 +31,8 @@ export default defineConfig(() => {
       workbox: {
         cacheId: 'worthit',
         globPatterns: ['**/*.{js,css,html,png,svg,webmanifest}'],
-        navigateFallback: '/worthit/index.html',
-        navigateFallbackAllowlist: [/^\/worthit(?:\/|$)/],
+        navigateFallback: '/Valumin/index.html',
+        navigateFallbackAllowlist: [/^\/Valumin(?:\/|$)/],
         cleanupOutdatedCaches: true,
       },
     })],

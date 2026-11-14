@@ -1,6 +1,6 @@
 export function receiptFilename(name: string, date: string): string {
   const safeName = name.replace(/[<>:"/\\|?*\u0000-\u001f]/g, '').trim().replace(/[. ]+$/, '').slice(0, 60) || '소비';
-  return `WorthIt-${safeName}-${date}`;
+  return `Valumin-${safeName}-${date}`;
 }
 
 export async function renderReceipt(node: HTMLElement): Promise<HTMLCanvasElement> {
@@ -39,7 +39,7 @@ export async function saveReceiptPdf(node: HTMLElement, filename: string): Promi
   const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4', compress: true });
   const width = Math.min(110, 273 * canvas.width / canvas.height);
   const height = width * canvas.height / canvas.width;
-  pdf.setProperties({ title: 'WorthIt 소비 영수증', creator: 'WorthIt' });
+  pdf.setProperties({ title: 'Valumin 소비 영수증', creator: 'Valumin' });
   pdf.addImage(canvas.toDataURL('image/png'), 'PNG', (210 - width) / 2, 12, width, height);
   await pdf.save(`${filename}.pdf`, { returnPromise: true });
 }

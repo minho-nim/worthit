@@ -207,7 +207,7 @@ export function validateAndParseBackup(jsonString: string): {
       return { success: false, error: '유효한 JSON 파일 형식이 아닙니다.' };
     }
     if (!Array.isArray(parsed.items) || !Array.isArray(parsed.usageRecords)) {
-      return { success: false, error: 'WorthIt 데이터 백업 형식이 올바르지 않습니다.' };
+      return { success: false, error: 'Valumin 데이터 백업 형식이 올바르지 않습니다.' };
     }
     const periods = parsed.billingPeriods ?? [];
     if (!parsed.items.every(isBackupItem) || !parsed.usageRecords.every(isBackupRecord)

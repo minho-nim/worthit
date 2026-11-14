@@ -80,8 +80,8 @@ export const HomeView: React.FC<HomeViewProps> = ({
         </div>
 
         <div className="p-5 rounded-3xl bg-white border border-slate-200/90 shadow-xs text-left space-y-3.5">
-          <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">
-            WorthIt 3단계 내 사용 목표 찾기
+          <p className="text-xs font-bold text-slate-400 tracking-wider">
+            Valumin 3단계 내 사용 목표 찾기
           </p>
           <div className="flex items-center gap-3">
             <span className="w-6 h-6 rounded-full bg-emerald-100 text-emerald-800 text-xs font-bold flex items-center justify-center shrink-0">

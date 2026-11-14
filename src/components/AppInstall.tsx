@@ -72,7 +72,7 @@ export function AppInstall() {
         <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3">
           <div className="flex items-center justify-between gap-3">
             <div>
-              <p className="text-xs font-bold text-emerald-900">WorthIt을 앱처럼 사용하세요</p>
+              <p className="text-xs font-bold text-emerald-900">Valumin을 앱처럼 사용하세요</p>
               <p className="text-[11px] text-emerald-800 mt-1">홈 화면에서 바로 열고, 처음 불러온 뒤에는 오프라인에서도 기록할 수 있어요.</p>
             </div>
             <button type="button" onClick={install} disabled={installing} aria-expanded={showHelp}
